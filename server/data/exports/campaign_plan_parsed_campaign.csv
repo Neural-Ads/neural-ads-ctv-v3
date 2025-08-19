@@ -1,0 +1,4 @@
+line_item_id,line_item_name,budget,start_date,end_date,networks,genres,devices,locations,segment_ids
+line_1,Parsed Campaign - Line Item 1,33333.333333333336,2025-06-26T11:06:34.769145,2025-06-26T11:06:34.769159,Hulu,Sports,SmartTV,Los Angeles,1
+line_2,Parsed Campaign - Line Item 2,33333.333333333336,2025-06-26T11:06:34.769145,2025-06-26T11:06:34.769159,Roku,Comedy,Mobile,New York,2
+line_3,Parsed Campaign - Line Item 3,33333.333333333336,2025-06-26T11:06:34.769145,2025-06-26T11:06:34.769159,Tubi,Drama,SmartTV,Chicago,3

@@ -1,0 +1,106 @@
+# Neural Ads CTV Platform - Git Ignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# React/Vite
+dist/
+.vite/
+.DS_Store
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Database
+*.sqlite3
+*.db
+chroma_db/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+.temp/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Environment specific
+.env.production
+.env.staging
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Cache
+.cache/
+.npm/
+.yarn/
+
+# Lock files (keep package-lock.json but ignore yarn.lock)
+yarn.lock
+
+# Neural Ads specific
+data/exports/*.csv
+advertiser_vector_database_full.json

@@ -1,0 +1,1442 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Typography Enhancement Variables */
+:root {
+  /* Font Weights for Better Hierarchy */
+  --font-weight-thin: 100;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  
+  /* Letter Spacing for Readability */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+  
+  /* Line Heights for Dense Data Displays */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+}
+
+/* Typography Base Styles */
+body {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #2563eb 50%, #3b82f6 75%, #60a5fa 100%);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Enhanced Typography Classes */
+.neural-typography-display {
+  font-size: 3.75rem; /* 60px */
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-tight);
+  @apply text-white;
+  text-shadow: 0 4px 8px rgba(30, 64, 175, 0.6);
+}
+
+.neural-typography-h1 {
+  font-size: 3rem; /* 48px */
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  @apply text-white;
+  text-shadow: 0 3px 6px rgba(30, 64, 175, 0.5);
+}
+
+.neural-typography-h2 {
+  font-size: 2.25rem; /* 36px */
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  @apply text-white;
+  text-shadow: 0 2px 4px rgba(30, 64, 175, 0.4);
+}
+
+.neural-typography-h3 {
+  font-size: 1.875rem; /* 30px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-white;
+  text-shadow: 0 2px 4px rgba(30, 64, 175, 0.3);
+}
+
+.neural-typography-h4 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-white;
+  text-shadow: 0 1px 3px rgba(30, 64, 175, 0.3);
+}
+
+.neural-typography-h5 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-white;
+  text-shadow: 0 1px 2px rgba(30, 64, 175, 0.2);
+}
+
+.neural-typography-h6 {
+  font-size: 1.125rem; /* 18px */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-wide);
+  @apply text-white;
+  text-shadow: 0 1px 2px rgba(30, 64, 175, 0.2);
+}
+
+/* Body Text Variants */
+.neural-typography-body-large {
+  font-size: 1.125rem; /* 18px */
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-blue-100;
+}
+
+.neural-typography-body {
+  font-size: 1rem; /* 16px */
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-blue-100;
+}
+
+.neural-typography-body-small {
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-blue-200;
+}
+
+/* Data Display Typography */
+.neural-typography-data-large {
+  font-size: 2rem; /* 32px */
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  @apply text-white font-mono;
+  text-shadow: 0 2px 4px rgba(30, 64, 175, 0.4);
+}
+
+.neural-typography-data-medium {
+  font-size: 1.5rem; /* 24px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-white font-mono;
+  text-shadow: 0 1px 3px rgba(30, 64, 175, 0.3);
+}
+
+.neural-typography-data-small {
+  font-size: 1rem; /* 16px */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-blue-100 font-mono;
+}
+
+/* Label and Caption Typography */
+.neural-typography-label {
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  @apply text-blue-200;
+}
+
+.neural-typography-caption {
+  font-size: 0.75rem; /* 12px */
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-wide);
+  @apply text-blue-300;
+}
+
+.neural-typography-overline {
+  font-size: 0.75rem; /* 12px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-widest);
+  text-transform: uppercase;
+  @apply text-blue-300;
+}
+
+/* Dense Data Display Optimizations */
+.neural-typography-table-header {
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  @apply text-blue-100;
+}
+
+.neural-typography-table-cell {
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-blue-200;
+}
+
+.neural-typography-table-number {
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-white font-mono;
+}
+
+/* Interactive Element Typography */
+.neural-typography-button {
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-wide);
+  @apply text-white;
+}
+
+.neural-typography-button-large {
+  font-size: 1rem; /* 16px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-wide);
+  @apply text-white;
+}
+
+.neural-typography-link {
+  font-size: 0.875rem; /* 14px */
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  @apply text-blue-200 hover:text-white transition-colors duration-200;
+  text-decoration: underline;
+  text-decoration-color: rgba(96, 165, 250, 0.5);
+  text-underline-offset: 2px;
+}
+
+.neural-typography-link:hover {
+  text-decoration-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Status and Indicator Typography */
+.neural-typography-status {
+  font-size: 0.75rem; /* 12px */
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+}
+
+.neural-typography-badge {
+  font-size: 0.75rem; /* 12px */
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-none);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+  @apply text-white;
+}
+
+/* Utility Classes for Typography Adjustments */
+.neural-font-thin { font-weight: var(--font-weight-thin); }
+.neural-font-light { font-weight: var(--font-weight-light); }
+.neural-font-normal { font-weight: var(--font-weight-normal); }
+.neural-font-medium { font-weight: var(--font-weight-medium); }
+.neural-font-semibold { font-weight: var(--font-weight-semibold); }
+.neural-font-bold { font-weight: var(--font-weight-bold); }
+.neural-font-extrabold { font-weight: var(--font-weight-extrabold); }
+.neural-font-black { font-weight: var(--font-weight-black); }
+
+.neural-tracking-tight { letter-spacing: var(--letter-spacing-tight); }
+.neural-tracking-normal { letter-spacing: var(--letter-spacing-normal); }
+.neural-tracking-wide { letter-spacing: var(--letter-spacing-wide); }
+.neural-tracking-wider { letter-spacing: var(--letter-spacing-wider); }
+.neural-tracking-widest { letter-spacing: var(--letter-spacing-widest); }
+
+.neural-leading-none { line-height: var(--line-height-none); }
+.neural-leading-tight { line-height: var(--line-height-tight); }
+.neural-leading-snug { line-height: var(--line-height-snug); }
+.neural-leading-normal { line-height: var(--line-height-normal); }
+.neural-leading-relaxed { line-height: var(--line-height-relaxed); }
+.neural-leading-loose { line-height: var(--line-height-loose); }
+
+/* Custom CSS Variables for Neural Ads */
+:root {
+  --neural-primary: #1e40af;
+  --neural-primary-light: #3b82f6;
+  --neural-secondary: #7c3aed;
+  --neural-accent: #06b6d4;
+  --neural-success: #10b981;
+  --neural-warning: #f59e0b;
+  --neural-error: #ef4444;
+  --neural-gray-50: #f9fafb;
+  --neural-gray-100: #f3f4f6;
+  --neural-gray-200: #e5e7eb;
+  --neural-gray-300: #d1d5db;
+  --neural-gray-600: #4b5563;
+  --neural-gray-700: #374151;
+  --neural-gray-800: #1f2937;
+  --neural-gray-900: #111827;
+}
+
+/* Enhanced Card Styling */
+.neural-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200;
+}
+
+/* Glassmorphism Effects */
+.neural-glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  @apply rounded-xl shadow-lg transition-all duration-300;
+}
+
+.neural-glass:hover {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  @apply shadow-xl;
+}
+
+.neural-glass-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  @apply rounded-2xl shadow-2xl transition-all duration-300;
+}
+
+.neural-glass-card:hover {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  transform: translateY(-2px);
+  @apply shadow-3xl;
+}
+
+.neural-glass-panel {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  @apply rounded-xl shadow-lg;
+}
+
+.neural-glass-header {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  @apply px-6 py-4 rounded-t-xl;
+}
+
+.neural-glass-content {
+  background: rgba(255, 255, 255, 0.05);
+  @apply p-6 rounded-b-xl;
+}
+
+/* Colored Glass Variants */
+.neural-glass-blue {
+  background: rgba(59, 130, 246, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  @apply rounded-xl shadow-lg;
+}
+
+.neural-glass-purple {
+  background: rgba(124, 58, 237, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  @apply rounded-xl shadow-lg;
+}
+
+.neural-glass-green {
+  background: rgba(16, 185, 129, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  @apply rounded-xl shadow-lg;
+}
+
+.neural-glass-orange {
+  background: rgba(251, 146, 60, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(251, 146, 60, 0.2);
+  @apply rounded-xl shadow-lg;
+}
+
+/* Blue to Indigo Panel Variations */
+.neural-panel-blue-light {
+  background: rgba(96, 165, 250, 0.12);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(147, 197, 253, 0.25);
+  @apply rounded-xl shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(96, 165, 250, 0.25),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.neural-panel-blue {
+  background: rgba(59, 130, 246, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  @apply rounded-xl shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.neural-panel-blue-medium {
+  background: rgba(37, 99, 235, 0.18);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  @apply rounded-xl shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(37, 99, 235, 0.35),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
+}
+
+.neural-panel-indigo-light {
+  background: rgba(129, 140, 248, 0.16);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(165, 180, 252, 0.3);
+  @apply rounded-xl shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(129, 140, 248, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.neural-panel-indigo {
+  background: rgba(99, 102, 241, 0.18);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  @apply rounded-xl shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(99, 102, 241, 0.35),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
+}
+
+.neural-panel-indigo-deep {
+  background: rgba(79, 70, 229, 0.2);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  @apply rounded-xl shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(79, 70, 229, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Hover Effects for Panel Variations */
+.neural-panel-blue-light:hover {
+  background: rgba(96, 165, 250, 0.18);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px 0 rgba(96, 165, 250, 0.35),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.neural-panel-blue:hover {
+  background: rgba(59, 130, 246, 0.22);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px 0 rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.neural-panel-blue-medium:hover {
+  background: rgba(37, 99, 235, 0.25);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px 0 rgba(37, 99, 235, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.27);
+}
+
+.neural-panel-indigo-light:hover {
+  background: rgba(129, 140, 248, 0.22);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px 0 rgba(129, 140, 248, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.neural-panel-indigo:hover {
+  background: rgba(99, 102, 241, 0.25);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px 0 rgba(99, 102, 241, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.27);
+}
+
+.neural-panel-indigo-deep:hover {
+  background: rgba(79, 70, 229, 0.28);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px 0 rgba(79, 70, 229, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Uniform Blue Glassmorphism Theme */
+.blue-theme-body {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #2563eb 50%, #3b82f6 75%, #60a5fa 100%);
+  min-height: 100vh;
+}
+
+.blue-theme-glass-primary {
+  background: rgba(37, 99, 235, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  @apply rounded-xl shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(37, 99, 235, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.blue-theme-glass-primary:hover {
+  background: rgba(37, 99, 235, 0.25);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px 0 rgba(37, 99, 235, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.blue-theme-glass-secondary {
+  background: rgba(59, 130, 246, 0.12);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  @apply rounded-lg shadow-md;
+  box-shadow: 
+    0 6px 24px 0 rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+.blue-theme-glass-tertiary {
+  background: rgba(96, 165, 250, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(147, 197, 253, 0.18);
+  @apply rounded-lg shadow-sm;
+  box-shadow: 
+    0 4px 16px 0 rgba(96, 165, 250, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+.blue-theme-card {
+  background: rgba(30, 64, 175, 0.18);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  @apply rounded-xl p-6 shadow-xl;
+  box-shadow: 
+    0 10px 35px 0 rgba(30, 64, 175, 0.35),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.blue-theme-card:hover {
+  background: rgba(30, 64, 175, 0.25);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 15px 45px 0 rgba(30, 64, 175, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.blue-theme-header {
+  background: rgba(30, 58, 138, 0.2);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  @apply px-6 py-4;
+  box-shadow: 
+    0 4px 20px 0 rgba(30, 58, 138, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.blue-theme-sidebar {
+  background: rgba(30, 64, 175, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 
+    4px 0 20px 0 rgba(30, 64, 175, 0.25),
+    inset -1px 0 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.blue-theme-btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 cursor-pointer relative z-10 text-white;
+  background: rgba(37, 99, 235, 0.8);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  box-shadow: 
+    0 6px 20px 0 rgba(37, 99, 235, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.blue-theme-btn:hover {
+  background: rgba(37, 99, 235, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 10px 30px 0 rgba(37, 99, 235, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.blue-theme-btn-secondary {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 cursor-pointer relative z-10 text-white;
+  background: rgba(59, 130, 246, 0.6);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  box-shadow: 
+    0 4px 16px 0 rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+.blue-theme-btn-secondary:hover {
+  background: rgba(59, 130, 246, 0.8);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 8px 25px 0 rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.blue-theme-input {
+  background: rgba(96, 165, 250, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(147, 197, 253, 0.25);
+  @apply w-full px-4 py-3 rounded-lg text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200;
+  box-shadow: 
+    0 2px 12px 0 rgba(96, 165, 250, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.blue-theme-input:focus {
+  background: rgba(96, 165, 250, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 
+    0 4px 20px 0 rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+.blue-theme-modal {
+  background: rgba(30, 64, 175, 0.2);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  @apply rounded-2xl shadow-2xl;
+  box-shadow: 
+    0 20px 60px 0 rgba(30, 64, 175, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.blue-theme-text-primary {
+  @apply text-white font-medium;
+  text-shadow: 0 1px 3px rgba(30, 64, 175, 0.4);
+}
+
+.blue-theme-text-secondary {
+  @apply text-blue-100 font-normal;
+  text-shadow: 0 1px 2px rgba(30, 64, 175, 0.3);
+}
+
+.blue-theme-text-muted {
+  @apply text-blue-200 font-normal;
+  text-shadow: 0 1px 2px rgba(30, 64, 175, 0.2);
+}
+
+.blue-theme-heading {
+  @apply text-white font-bold tracking-tight;
+  text-shadow: 0 2px 4px rgba(30, 64, 175, 0.5);
+}
+
+/* Enhanced Shadow Utilities */
+.shadow-3xl {
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+}
+
+.shadow-glass {
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.37),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.shadow-glass-hover {
+  box-shadow: 
+    0 12px 40px 0 rgba(31, 38, 135, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.neural-card-header {
+  @apply px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50;
+}
+
+.neural-card-content {
+  @apply p-6;
+}
+
+/* Modern Progress Styles */
+.neural-progress-container {
+  @apply relative bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+}
+
+.neural-progress-timeline {
+  @apply flex items-center justify-between relative;
+}
+
+.neural-progress-step {
+  @apply relative flex flex-col items-center min-w-0;
+}
+
+.neural-progress-step::before {
+  content: '';
+  @apply absolute top-5 left-1/2 w-full h-0.5 bg-gray-200 -translate-x-1/2 -z-10;
+}
+
+.neural-progress-step:last-child::before {
+  display: none;
+}
+
+.neural-progress-step.completed::before {
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+}
+
+.neural-progress-step.active::before {
+  background: linear-gradient(to right, rgba(59, 130, 246, 1), rgba(29, 78, 216, 1));
+  box-shadow: 0 3px 12px rgba(59, 130, 246, 0.5);
+}
+
+/* Clean step circles with ENHANCED BLUE TINGE - FORCE UPDATE */
+.neural-step-circle {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2 transition-all duration-300 relative z-10;
+}
+
+.neural-step-circle.pending {
+  background: rgba(59, 130, 246, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  @apply text-blue-800;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.neural-step-circle.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+  border: 2px solid rgba(29, 78, 216, 1);
+  @apply text-white;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6), 0 0 25px rgba(59, 130, 246, 0.4);
+}
+
+.neural-step-circle.completed {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(37, 99, 235, 0.9));
+  border: 2px solid rgba(37, 99, 235, 0.8);
+  @apply text-white;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
+}
+
+/* Enhanced Form Styling */
+.neural-form-group {
+  @apply space-y-3;
+}
+
+.neural-label {
+  @apply block text-sm font-semibold text-gray-700 mb-2;
+}
+
+.neural-input {
+  @apply w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white;
+}
+
+.neural-input:focus {
+  @apply shadow-sm ring-2 ring-blue-500 ring-opacity-20;
+}
+
+.neural-input-value {
+  @apply w-full p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border-l-4 border-blue-500 text-gray-900 font-medium;
+}
+
+/* Status Badges */
+.neural-status-badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.neural-status-badge.success {
+  @apply bg-green-100 text-green-800 border border-green-200;
+}
+
+.neural-status-badge.warning {
+  @apply bg-amber-100 text-amber-800 border border-amber-200;
+}
+
+.neural-status-badge.info {
+  @apply bg-blue-100 text-blue-800 border border-blue-200;
+}
+
+.neural-status-badge.pending {
+  @apply bg-gray-100 text-gray-600 border border-gray-200;
+}
+
+/* Enhanced Glassmorphism Button Styles */
+.neural-btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer relative z-10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.1);
+}
+
+.neural-btn-primary {
+  @apply neural-btn text-white;
+  background: rgba(59, 130, 246, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 15px 0 rgba(59, 130, 246, 0.2);
+}
+
+.neural-btn-primary:hover {
+  background: rgba(59, 130, 246, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.3);
+}
+
+.neural-btn-secondary {
+  @apply neural-btn text-white;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.1);
+}
+
+.neural-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 rgba(255, 255, 255, 0.15);
+}
+
+.neural-btn-success {
+  @apply neural-btn text-white;
+  background: rgba(16, 185, 129, 0.7);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8px 25px 0 rgba(16, 185, 129, 0.3);
+}
+
+.neural-btn-success:hover {
+  background: rgba(16, 185, 129, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 35px 0 rgba(16, 185, 129, 0.4);
+}
+
+.neural-btn-danger {
+  @apply neural-btn text-white;
+  background: rgba(239, 68, 68, 0.7);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 25px 0 rgba(239, 68, 68, 0.3);
+}
+
+.neural-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 35px 0 rgba(239, 68, 68, 0.4);
+}
+
+.neural-btn-glass {
+  @apply neural-btn text-white;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.neural-btn-glass:hover {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+}
+
+/* Disabled button state */
+.neural-btn:disabled {
+  background: rgba(156, 163, 175, 0.3) !important;
+  border: 1px solid rgba(156, 163, 175, 0.2) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Additional glassmorphism panel styles */
+.neural-glass-panel {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  @apply rounded-lg shadow-lg;
+}
+
+.neural-glass-success {
+  background: rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  @apply rounded-lg shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.neural-glass-info {
+  background: rgba(59, 130, 246, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  @apply rounded-lg shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(59, 130, 246, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.neural-glass-warning {
+  background: rgba(245, 158, 11, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  @apply rounded-lg shadow-lg;
+  box-shadow: 
+    0 8px 32px 0 rgba(245, 158, 11, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.neural-glass-header {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  @apply p-6;
+}
+
+.neural-glass-content {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  @apply p-6;
+}
+
+/* Loading States */
+.neural-loading {
+  @apply animate-pulse;
+}
+
+.neural-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-200 border-t-blue-600;
+}
+
+/* Data Visualization */
+.neural-metric-card {
+  @apply bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.neural-metric-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.neural-metric-label {
+  @apply text-sm font-medium text-gray-600 uppercase tracking-wide;
+}
+
+/* Chat Interface Improvements */
+.neural-chat-message {
+  @apply p-4 rounded-lg max-w-sm;
+}
+
+.neural-chat-message.user {
+  @apply bg-gradient-to-r from-blue-600 to-blue-700 text-white ml-auto;
+}
+
+.neural-chat-message.agent {
+  @apply bg-white border border-gray-200 text-gray-900 mr-auto shadow-sm;
+}
+
+/* Sidebar Enhancements */
+.neural-sidebar {
+  @apply bg-white border-r border-gray-200;
+}
+
+.neural-sidebar-section {
+  @apply p-4 border-b border-gray-100;
+}
+
+.neural-sidebar-title {
+  @apply text-lg font-semibold text-gray-900 mb-3;
+}
+
+/* Toggle Switches */
+.neural-toggle {
+  @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+.neural-toggle.enabled {
+  @apply bg-gradient-to-r from-blue-600 to-blue-700;
+}
+
+.neural-toggle.disabled {
+  @apply bg-gray-200;
+}
+
+.neural-toggle-switch {
+  @apply inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out;
+}
+
+.neural-toggle.enabled .neural-toggle-switch {
+  @apply translate-x-6;
+}
+
+.neural-toggle.disabled .neural-toggle-switch {
+  @apply translate-x-1;
+}
+
+/* Confidence Indicators */
+.neural-confidence-bar {
+  @apply w-full bg-gray-200 rounded-full h-2;
+}
+
+.neural-confidence-fill {
+  @apply h-2 rounded-full transition-all duration-500;
+}
+
+.neural-confidence-fill.high {
+  @apply bg-gradient-to-r from-green-500 to-green-600;
+}
+
+.neural-confidence-fill.medium {
+  @apply bg-gradient-to-r from-yellow-500 to-yellow-600;
+}
+
+.neural-confidence-fill.low {
+  @apply bg-gradient-to-r from-red-500 to-red-600;
+}
+
+/* Enhanced Typography for Better Readability */
+.neural-heading-1 {
+  @apply text-2xl font-bold text-white tracking-tight;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.neural-heading-2 {
+  @apply text-xl font-semibold text-white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.neural-heading-3 {
+  @apply text-lg font-semibold text-white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced Text Readability Classes */
+.neural-text-primary {
+  @apply text-white font-medium;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.neural-text-secondary {
+  @apply text-gray-100 font-normal;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.neural-text-muted {
+  @apply text-gray-200 font-normal;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.neural-text-emphasis {
+  @apply text-white font-semibold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* High Contrast Text for Better Readability */
+.neural-text-contrast {
+  @apply text-white font-medium;
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.neural-text-label {
+  @apply text-gray-100 font-medium text-sm;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.neural-text-value {
+  @apply text-white font-semibold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.neural-text-body {
+  @apply text-gray-700 leading-relaxed;
+}
+
+.neural-text-muted {
+  @apply text-gray-500 text-sm;
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.neural-slide-in {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.neural-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Animated background blobs */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+/* Enhanced Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 0 40px rgba(99, 102, 241, 0.3); }
+}
+
+@keyframes slideInFromLeft {
+  0% { transform: translateX(-100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInFromRight {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Enhanced Interactive Elements */
+.neural-card-interactive {
+  @apply neural-panel-blue transition-all duration-300 cursor-pointer;
+  animation: float 6s ease-in-out infinite;
+}
+
+.neural-card-interactive:hover {
+  @apply neural-panel-indigo;
+  animation: glow 2s ease-in-out infinite;
+  transform: translateY(-5px) scale(1.02);
+}
+
+.neural-metric-animated {
+  @apply neural-panel-blue-light p-6 rounded-xl;
+  animation: scaleIn 0.6s ease-out;
+}
+
+.neural-metric-animated:hover {
+  @apply neural-panel-indigo-light;
+  animation: float 4s ease-in-out infinite;
+}
+
+.neural-button-enhanced {
+  @apply neural-btn-primary relative overflow-hidden;
+  background: linear-gradient(45deg, rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.8));
+}
+
+.neural-button-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.neural-button-enhanced:hover::before {
+  left: 100%;
+}
+
+.neural-status-indicator {
+  @apply w-3 h-3 rounded-full;
+  animation: glow 2s ease-in-out infinite;
+}
+
+.neural-status-indicator.active {
+  background: linear-gradient(45deg, #10b981, #34d399);
+}
+
+.neural-status-indicator.processing {
+  background: linear-gradient(45deg, #f59e0b, #fbbf24);
+}
+
+.neural-status-indicator.error {
+  background: linear-gradient(45deg, #ef4444, #f87171);
+}
+
+/* Staggered Animation Classes */
+.neural-stagger-1 { animation: slideInFromLeft 0.6s ease-out; animation-delay: 0.1s; animation-fill-mode: both; }
+.neural-stagger-2 { animation: slideInFromLeft 0.6s ease-out; animation-delay: 0.2s; animation-fill-mode: both; }
+.neural-stagger-3 { animation: slideInFromLeft 0.6s ease-out; animation-delay: 0.3s; animation-fill-mode: both; }
+.neural-stagger-4 { animation: slideInFromLeft 0.6s ease-out; animation-delay: 0.4s; animation-fill-mode: both; }
+.neural-stagger-5 { animation: slideInFromLeft 0.6s ease-out; animation-delay: 0.5s; animation-fill-mode: both; }
+
+/* Data Visualization Enhancements */
+.neural-progress-enhanced {
+  @apply relative w-full bg-gradient-to-r from-gray-200 to-gray-300 rounded-full h-3 overflow-hidden;
+}
+
+.neural-progress-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2s infinite;
+  width: 50%;
+}
+
+.neural-progress-fill {
+  @apply h-full rounded-full transition-all duration-1000 ease-out;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.9), rgba(139, 92, 246, 0.8));
+}
+
+/* Tooltip Enhancements */
+.neural-tooltip {
+  @apply neural-panel-indigo-deep px-3 py-2 text-sm text-white rounded-lg shadow-lg;
+  position: absolute;
+  z-index: 1000;
+  animation: scaleIn 0.2s ease-out;
+}
+
+.neural-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(79, 70, 229, 0.9) transparent transparent transparent;
+}
+
+/* Loading States with Glassmorphism */
+.neural-skeleton {
+  @apply neural-panel-blue-light animate-pulse rounded;
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.1), rgba(147, 197, 253, 0.2), rgba(96, 165, 250, 0.1));
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .neural-progress-timeline {
+    @apply flex-col space-y-4;
+  }
+  
+  .neural-progress-step::before {
+    display: none;
+  }
+  
+  .neural-card-content {
+    @apply p-4;
+  }
+}
+
+/* Dark mode support (future enhancement) */
+/* Traditional Theme Classes for High Contrast Mode */
+.traditional-text-primary {
+  @apply text-gray-900 font-medium;
+}
+
+.traditional-text-secondary {
+  @apply text-gray-600 font-normal;
+}
+
+.traditional-text-muted {
+  @apply text-gray-500 font-normal;
+}
+
+.traditional-text-emphasis {
+  @apply text-gray-900 font-semibold;
+}
+
+.traditional-text-contrast {
+  @apply text-gray-900 font-bold;
+}
+
+.traditional-text-label {
+  @apply text-gray-700 font-medium text-sm;
+}
+
+.traditional-text-value {
+  @apply text-gray-900 font-semibold;
+}
+
+.traditional-heading-1 {
+  @apply text-2xl font-bold text-gray-900 tracking-tight;
+}
+
+.traditional-heading-2 {
+  @apply text-xl font-semibold text-gray-900;
+}
+
+.traditional-heading-3 {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+/* Traditional Button Styles */
+.traditional-btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer border;
+}
+
+.traditional-btn-primary {
+  @apply traditional-btn bg-blue-600 hover:bg-blue-700 text-white border-blue-600 focus:ring-blue-500;
+}
+
+.traditional-btn-secondary {
+  @apply traditional-btn bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300 focus:ring-gray-500;
+}
+
+.traditional-btn-success {
+  @apply traditional-btn bg-green-600 hover:bg-green-700 text-white border-green-600 focus:ring-green-500;
+}
+
+.traditional-btn-danger {
+  @apply traditional-btn bg-red-600 hover:bg-red-700 text-white border-red-600 focus:ring-red-500;
+}
+
+/* Traditional Panel Styles */
+.traditional-panel {
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+}
+
+.traditional-panel-header {
+  @apply bg-gray-50 border-b border-gray-200 px-6 py-4 rounded-t-lg;
+}
+
+.traditional-panel-content {
+  @apply bg-white px-6 py-4 rounded-b-lg;
+}
+
+@media (prefers-color-scheme: dark) {
+  .neural-card {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .neural-heading-1,
+  .neural-heading-2,
+  .neural-heading-3 {
+    @apply text-white;
+  }
+
+  .neural-text-body {
+    @apply text-gray-300;
+  }
+}

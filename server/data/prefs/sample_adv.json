@@ -1,0 +1,6 @@
+{
+  "networks": ["Hulu", "Roku", "Tubi"],
+  "genres":   ["Sports", "Comedy", "Drama"],
+  "devices":  ["SmartTV", "Mobile"],
+  "locations":["Los Angeles","New York","Chicago"]
+} 

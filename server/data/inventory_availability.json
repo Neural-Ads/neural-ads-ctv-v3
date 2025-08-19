@@ -1,0 +1,104 @@
+{
+  "inventory_pools": {
+    "premium_ctv": {
+      "weekly_availability_mm": [45.2, 48.1, 52.3, 49.7, 51.8, 47.6],
+      "avg_cpm_range": [12.50, 18.00],
+      "fill_rate_range": [0.75, 0.92],
+      "description": "Premium Connected TV inventory including live sports, news, and first-run content"
+    },
+    "standard_ctv": {
+      "weekly_availability_mm": [78.5, 82.1, 85.6, 80.3, 83.7, 79.9],
+      "avg_cpm_range": [8.50, 12.00],
+      "fill_rate_range": [0.85, 0.95],
+      "description": "Standard Connected TV inventory across entertainment and lifestyle content"
+    },
+    "sports_content": {
+      "weekly_availability_mm": [25.3, 28.7, 31.2, 29.8, 33.1, 26.4],
+      "avg_cpm_range": [15.00, 22.00],
+      "fill_rate_range": [0.65, 0.85],
+      "description": "Sports-focused inventory including live games, highlights, and sports programming"
+    },
+    "news_content": {
+      "weekly_availability_mm": [18.7, 22.3, 20.1, 19.8, 21.5, 17.9],
+      "avg_cpm_range": [10.00, 16.00],
+      "fill_rate_range": [0.80, 0.90],
+      "description": "News and current affairs programming across multiple networks"
+    },
+    "entertainment": {
+      "weekly_availability_mm": [92.1, 95.8, 89.3, 91.7, 88.2, 94.5],
+      "avg_cpm_range": [7.00, 11.00],
+      "fill_rate_range": [0.90, 0.98],
+      "description": "Entertainment content including drama, comedy, reality TV, and streaming originals"
+    }
+  },
+  "seasonal_factors": {
+    "q1_multiplier": 0.85,
+    "q2_multiplier": 1.10,
+    "q3_multiplier": 0.95,
+    "q4_multiplier": 1.25,
+    "holiday_periods": {
+      "thanksgiving_week": 1.35,
+      "christmas_week": 1.40,
+      "new_years_week": 1.20,
+      "super_bowl_week": 1.50,
+      "march_madness": 1.30
+    }
+  },
+  "geographic_modifiers": {
+    "tier_1_markets": {
+      "multiplier": 1.25,
+      "markets": ["New York", "Los Angeles", "Chicago", "Philadelphia", "Dallas"]
+    },
+    "tier_2_markets": {
+      "multiplier": 1.10,
+      "markets": ["Atlanta", "Boston", "Phoenix", "Detroit", "Seattle"]
+    },
+    "tier_3_markets": {
+      "multiplier": 0.95,
+      "markets": ["Denver", "Miami", "Cleveland", "Tampa", "Portland"]
+    }
+  },
+  "daypart_availability": {
+    "primetime": {
+      "availability_percentage": 0.35,
+      "cpm_premium": 1.40
+    },
+    "daytime": {
+      "availability_percentage": 0.25,
+      "cpm_premium": 0.80
+    },
+    "late_night": {
+      "availability_percentage": 0.20,
+      "cpm_premium": 0.90
+    },
+    "weekend": {
+      "availability_percentage": 0.20,
+      "cpm_premium": 1.15
+    }
+  },
+  "competitive_pressure": {
+    "automotive": {
+      "peak_months": [3, 4, 9, 10, 11],
+      "cpm_impact": 1.15
+    },
+    "retail": {
+      "peak_months": [11, 12, 1],
+      "cpm_impact": 1.30
+    },
+    "telecom": {
+      "peak_months": [1, 2, 9, 10],
+      "cpm_impact": 1.10
+    },
+    "financial_services": {
+      "peak_months": [1, 4, 9, 10],
+      "cpm_impact": 1.20
+    }
+  },
+  "metadata": {
+    "last_updated": "2024-06-27T08:00:00Z",
+    "data_source": "Neural Ads Inventory Management System",
+    "update_frequency": "weekly",
+    "coverage_period": "6_weeks_rolling",
+    "confidence_level": 0.87
+  }
+} 

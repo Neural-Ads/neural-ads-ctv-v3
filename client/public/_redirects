@@ -1,0 +1,12 @@
+# Redirects for Single Page Application
+# This ensures that all routes are handled by the React app
+
+# Handle SPA routing - redirect all non-file requests to index.html
+/*    /index.html   200
+
+# API proxy (if needed for development)
+/api/*  https://your-backend-api.com/api/:splat  200
+
+# Security headers for static assets
+/static/*  /static/:splat  200
+/assets/*  /assets/:splat  200 

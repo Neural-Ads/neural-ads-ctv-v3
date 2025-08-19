@@ -1,0 +1,10 @@
+{
+    "environment": "dev",
+    "instance_id": "i-0efbf965da1ffe69f",
+    "public_ip": "44.203.238.196",
+    "security_group_id": "sg-0c9188498d43e4147",
+    "api_gateway_id": "p2ixabmztl",
+    "api_url": "https://p2ixabmztl.execute-api.us-east-1.amazonaws.com/prod",
+    "deployment_id": "s4dexk",
+    "deployed_at": "2025-07-09T15:22:24Z"
+}
