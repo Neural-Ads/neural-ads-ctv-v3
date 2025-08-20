@@ -746,11 +746,20 @@ const AgenticWorkspace: React.FC = () => {
           timestamp: new Date().toISOString()
         }]);
         
-        // Continue the workflow to trigger forecasting
+        // Continue the workflow to trigger forecasting with parameters
         const response = await fetch('/chat/workflow-continue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: forecastMessage })
+          body: JSON.stringify({ 
+            message: forecastMessage,
+            forecasting_params: {
+              budget: editableParams.budget || '',
+              timeline: editableParams.timeline || '4 weeks',
+              frequency: editableParams.frequency || editableParams.targetFrequency || '2.5',
+              startDate: editableParams.startDate || '',
+              endDate: editableParams.endDate || ''
+            }
+          })
         });
         
         if (!response.ok) {
@@ -815,25 +824,42 @@ const AgenticWorkspace: React.FC = () => {
         timestamp: new Date().toISOString()
       }]);
       
-      // Send reforecast request to backend
-      const response = await sendChatMessage(reforecastMessage);
-      
-      if (!response.data) {
-        throw new Error(`Reforecast failed: no data received`);
+      // Send reforecast request to backend with updated parameters
+      const response = await fetch('/chat/workflow-continue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: reforecastMessage,
+          forecasting_params: {
+            budget: editableParams.budget || '',
+            timeline: editableParams.timeline || '4 weeks',
+            frequency: editableParams.frequency || editableParams.targetFrequency || '2.5',
+            startDate: editableParams.startDate || '',
+            endDate: editableParams.endDate || ''
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+
+      const result = await response.json();
       
-      const result = response.data;
+      if (!result.workflow_result) {
+        throw new Error(`Reforecast failed: no workflow result received`);
+      }
       console.log('✅ Reforecast response received:', result);
       
       // Add agent response to chat
       setChatMessages(prev => [...prev, {
         type: 'agent',
-        content: result.response,
+        content: result.message || 'Forecast regenerated successfully',
         timestamp: new Date().toISOString()
       }]);
       
-      // If workflow was triggered, update the forecasting data
-      if (result.workflow_triggered && result.workflow_result) {
+      // Update the forecasting data with new results
+      if (result.workflow_result) {
         const workflowResult = result.workflow_result;
         
         // Update campaign data with new forecast

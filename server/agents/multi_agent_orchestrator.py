@@ -491,4 +491,60 @@ class MultiAgentOrchestrator:
             self.forecasting_result = None
             self._processing = False
             self._last_advance_time = 0
-            print("✅ Workflow reset complete") 
+            print("✅ Workflow reset complete")
+
+    def update_forecasting_params(self, params: Dict[str, Any]):
+        """Update forecasting parameters for the next forecasting run"""
+        with self._lock:
+            if not hasattr(self, 'updated_forecasting_params'):
+                self.updated_forecasting_params = {}
+            
+            # Store updated parameters
+            self.updated_forecasting_params.update(params)
+            
+            # If we have campaign parameters, update them too
+            if self.campaign_parameters:
+                if 'budget' in params and params['budget']:
+                    self.campaign_parameters.total_budget = float(params['budget'])
+                if 'timeline' in params and params['timeline']:
+                    self.campaign_parameters.timeline = params['timeline']
+                if 'frequency' in params and params['frequency']:
+                    self.campaign_parameters.target_frequency = float(params['frequency'])
+                if 'startDate' in params and params['startDate']:
+                    self.campaign_parameters.start_date = params['startDate']
+                if 'endDate' in params and params['endDate']:
+                    self.campaign_parameters.end_date = params['endDate']
+            
+            print(f"📊 Updated forecasting parameters: {params}")
+
+    async def rerun_current_step(self, message: str = "Rerun current step") -> WorkflowResult:
+        """Re-run the current step without advancing"""
+        with self._lock:
+            if self._processing:
+                raise Exception("Workflow is already processing")
+            
+            self._processing = True
+        
+        try:
+            print(f"🔄 Re-running current step: {self.current_step.value}")
+            
+            if self.current_step == WorkflowStep.FORECASTING:
+                print("📊 Starting forecasting re-run...")
+                result = await self._process_forecasting_step(message)
+                print(f"✅ Forecasting re-run complete: {result.action}")
+                return result
+            else:
+                # For other steps, just return current state
+                print(f"📝 Re-running step {self.current_step.value}")
+                return WorkflowResult(
+                    step=self.current_step,
+                    reasoning=f"Re-ran {self.current_step.value}",
+                    action=message,
+                    data=self.campaign_context.get(self.current_step.value, {}),
+                    confidence=0.95
+                )
+        except Exception as e:
+            print(f"❌ Error re-running step {self.current_step.value}: {str(e)}")
+            raise e
+        finally:
+            self._processing = False 

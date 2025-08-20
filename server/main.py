@@ -316,14 +316,57 @@ async def get_chat_summary():
         }
 
 @app.post("/chat/workflow-continue")
-async def continue_workflow():
+async def continue_workflow(request: Request = None):
     """Continue the current workflow to the next step"""
     try:
-        # Advance to next step
-        next_step = orchestrator.advance_step()
+        # Parse request body if provided
+        forecasting_params = None
+        if request:
+            try:
+                body = await request.json()
+                if "forecasting_params" in body:
+                    forecasting_params = body["forecasting_params"]
+                    print(f"🔄 Received forecasting parameters: {forecasting_params}")
+            except:
+                pass  # No body or invalid JSON, continue without params
         
-        # Process the next step
-        result = await orchestrator.process_step("Continue workflow")
+        # Get current step before advancing
+        current_step_before = orchestrator.current_step
+        
+        # If we're already in forecasting and have parameters, don't advance - just reforecast
+        if current_step_before.value == "forecasting" and forecasting_params:
+            # Update orchestrator with new forecasting parameters
+            orchestrator.update_forecasting_params(forecasting_params)
+            print(f"🔄 Reforecasting with updated parameters: budget=${forecasting_params.get('budget', 'N/A')}, timeline={forecasting_params.get('timeline', 'N/A')}, frequency={forecasting_params.get('frequency', 'N/A')}")
+            next_step = current_step_before  # Stay in forecasting step
+        else:
+            # Normal workflow advancement
+            next_step = orchestrator.advance_step()
+            
+            # If we're advancing to forecasting and have parameters, update them
+            if next_step.value == "forecasting" and forecasting_params:
+                # Update orchestrator with new forecasting parameters
+                orchestrator.update_forecasting_params(forecasting_params)
+                print(f"📊 Updated forecasting parameters: budget=${forecasting_params.get('budget', 'N/A')}, timeline={forecasting_params.get('timeline', 'N/A')}, frequency={forecasting_params.get('frequency', 'N/A')}")
+        
+        # Process the step
+        message = "Continue workflow"
+        if forecasting_params:
+            # Create a more descriptive message with the parameters
+            budget = forecasting_params.get('budget', 'N/A')
+            timeline = forecasting_params.get('timeline', 'N/A')
+            frequency = forecasting_params.get('frequency', 'N/A')
+            message = f"Generate forecast with budget ${budget}, timeline {timeline}, frequency {frequency}x"
+        
+        # If we're reforecasting (staying in same step), use rerun method
+        if current_step_before.value == "forecasting" and forecasting_params:
+            print("🔄 Using rerun method for reforecasting...")
+            result = await orchestrator.rerun_current_step(message)
+            print(f"✅ Reforecast completed: {result.action}")
+        else:
+            print("🔄 Using normal process step...")
+            result = await orchestrator.process_step(message)
+            print(f"✅ Step processed: {result.action}")
         
         # Get updated status
         status = orchestrator.get_current_status()
