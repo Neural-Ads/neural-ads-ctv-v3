@@ -1074,8 +1074,8 @@ const AgenticWorkspace: React.FC = () => {
               {segments.map((segment, index) => (
                 <div key={index} className={`rounded-lg p-6 ${
                   isGlassmorphism 
-                    ? 'neural-glass-success' 
-                    : 'bg-green-50 border border-green-200'
+                    ? 'neural-glass-warning' 
+                    : 'bg-orange-50 border border-orange-200'
                 }`}>
                   <div className="flex justify-between items-start mb-3">
                     <h4 className={`font-semibold text-lg ${

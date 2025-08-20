@@ -180,7 +180,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                 isGlassmorphism 
                   ? `neural-glass-header ${
                       status === 'active' ? 'neural-glass-info' :
-                      status === 'completed' ? 'neural-glass-success' :
+                      status === 'completed' ? 'neural-glass-warning' :
                       'neural-glass-panel'
                     }`
                   : `${
