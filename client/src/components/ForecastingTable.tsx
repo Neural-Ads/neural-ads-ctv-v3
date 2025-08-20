@@ -1,31 +1,29 @@
 import React, { useState } from 'react';
 import { useTheme } from './AgenticWorkspace';
 
-interface WeeklyForecast {
-  week_number: number;
-  week_dates: string;
-  inventory_available_mm: number;
+interface CampaignForecast {
+  campaign_duration: string;
+  campaign_dates: string;
+  total_inventory_available_mm: number;
   forecasted_impressions_mm: number;
   fill_rate_percent: number;
-  ecpm_dollars: number;
-  notes: string;
+  effective_cpm_dollars: number;
+  estimated_reach: number;
+  frequency: number;
+  notes: string[];
 }
 
 interface ForecastingData {
   advertiser: string;
   campaign_total_budget: number;
-  weekly_forecasts: WeeklyForecast[];
-  month_totals: {
-    inventory_available_mm: number;
-    forecasted_impressions_mm: number;
-    avg_fill_rate_percent: number;
-    avg_ecpm_dollars: number;
-  };
-  campaign_totals: {
-    inventory_available_mm: number;
-    forecasted_impressions_mm: number;
-    avg_fill_rate_percent: number;
-    avg_ecpm_dollars: number;
+  campaign_forecast: CampaignForecast;
+  performance_breakdown: {
+    total_impressions_mm: number;
+    effective_cpm: number;
+    fill_rate_percent: number;
+    estimated_reach: number;
+    average_frequency: number;
+    inventory_utilization_percent: number;
   };
   forecasting_insights: string[];
 }
@@ -45,8 +43,13 @@ const ForecastingTable: React.FC<ForecastingTableProps> = ({ data, confidence })
     return `$${num.toFixed(2)}`;
   };
 
-  const getWeekLabel = (forecast: WeeklyForecast): string => {
-    return `Week ${forecast.week_number} (${forecast.week_dates})`;
+  const formatReach = (reach: number): string => {
+    if (reach >= 1000000) {
+      return `${(reach / 1000000).toFixed(1)}M`;
+    } else if (reach >= 1000) {
+      return `${(reach / 1000).toFixed(0)}K`;
+    }
+    return reach.toString();
   };
 
   const getFillRateColor = (fillRate: number): string => {

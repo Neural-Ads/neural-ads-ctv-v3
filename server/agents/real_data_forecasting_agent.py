@@ -613,7 +613,7 @@ class RealDataForecastingAgent:
             f"**Data Source**: {forecast_result.data_source.replace('_', ' ').title()}",
             f"**Campaign Overview:**",
             f"• Total Budget: ${forecast_result.campaign_total_budget:,.2f}",
-            f"• Timeline: {len(forecast_result.weekly_forecasts)} weeks",
+            f"• Duration: {forecast_result.campaign_forecast.campaign_duration}",
             f"• Forecast Confidence: {(forecast_result.confidence * 100):.1f}%",
             "",
             f"**Real Data Insights:**"
@@ -624,23 +624,25 @@ class RealDataForecastingAgent:
         else:
             reasoning_parts.append("⚠️ Using estimated data - real data integration pending")
         
+        campaign = forecast_result.campaign_forecast
+        
         reasoning_parts.extend([
             "",
-            f"**Weekly Breakdown:**"
+            f"**Campaign Metrics:**",
+            f"• Projected Impressions: {campaign.forecasted_impressions_mm:.1f}M",
+            f"• Estimated Reach: {campaign.estimated_reach:,} unique viewers", 
+            f"• Average Frequency: {campaign.frequency:.1f}x per viewer",
+            f"• Fill Rate: {campaign.fill_rate_percent:.1f}%",
+            f"• Effective CPM: ${campaign.effective_cpm_dollars:.2f}",
+            f"• Campaign Dates: {campaign.campaign_dates}",
+            "",
+            f"**Campaign Notes:**"
         ])
         
-        for forecast in forecast_result.weekly_forecasts:
-            reasoning_parts.append(
-                f"• Week {forecast.week_number}: {forecast.fill_rate_percent}% fill rate, "
-                f"${forecast.ecpm_dollars} eCPM, {forecast.forecasted_impressions_mm}M impressions"
-            )
+        for note in campaign.notes:
+            reasoning_parts.append(f"• {note}")
         
         reasoning_parts.extend([
-            "",
-            f"**Campaign Performance Projection:**",
-            f"• Total Forecasted Impressions: {forecast_result.campaign_totals['forecasted_impressions_mm']}M",
-            f"• Average Fill Rate: {forecast_result.campaign_totals['avg_fill_rate_percent']}%",
-            f"• Average eCPM: ${forecast_result.campaign_totals['avg_ecpm_dollars']}",
             "",
             f"**Strategic Recommendations:**"
         ])

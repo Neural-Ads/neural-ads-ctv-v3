@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import ChatInterface from './ChatInterface';
 import CampaignSteps from './CampaignSteps';
-import ForecastingTable from './ForecastingTable';
+import CampaignForecastTable from './CampaignForecastTable';
 import CampaignSetup from './CampaignSetup';
 import { sendChatMessage, continueWorkflow, resetAgent, getAgentStatus, getAdvertisers } from '../api';
 
@@ -2192,7 +2192,7 @@ const AgenticWorkspace: React.FC = () => {
                       }
                       
                       return (
-                        <ForecastingTable 
+                        <CampaignForecastTable 
                           data={forecastData.data}
                           confidence={forecastData.confidence}
                         />
