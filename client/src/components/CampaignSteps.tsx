@@ -37,7 +37,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
       id: 'audience_generation',
       title: 'Audience Analysis',
       description: 'Analyze target audience',
-      color: 'green'
+      color: 'teal'
     },
     {
       id: 'campaign_generation',
@@ -83,7 +83,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
           }`}>Ad Planning Progress</h3>
           <p className={`text-sm mt-1 ${
             isGlassmorphism 
-              ? 'text-gray-100' 
+              ? 'text-blue-100' 
               : 'text-gray-600'
           }`}>Track your campaign setup</p>
         </div>
@@ -103,7 +103,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
           </div>
           <div className={`text-sm mt-1 ${
             isGlassmorphism 
-              ? 'text-gray-100' 
+              ? 'text-blue-100' 
               : 'text-gray-600'
           }`}>{progress.toFixed(0)}% Complete</div>
         </div>
@@ -151,7 +151,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                 {/* Connection line */}
                 {index < steps.length - 1 && (
                   <div className={`absolute top-5 left-1/2 w-full h-0.5 -translate-x-1/2 -z-10 ${
-                    status === 'completed' ? 'bg-gradient-to-r from-green-400 to-green-500' :
+                    status === 'completed' ? 'bg-gradient-to-r from-cyan-400 to-teal-500' :
                     status === 'active' ? 'bg-gradient-to-r from-blue-400 to-blue-500' :
                     isGlassmorphism ? 'bg-white bg-opacity-20' : 'bg-gray-200'
                   }`}></div>
@@ -185,7 +185,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                     }`
                   : `${
                       status === 'active' ? 'bg-blue-50 border-b border-blue-200' :
-                      status === 'completed' ? 'bg-green-50 border-b border-green-200' :
+                      status === 'completed' ? 'bg-cyan-50 border-b border-cyan-200' :
                       'bg-gray-50 border-b border-gray-200'
                     }`
               }`}>
@@ -207,7 +207,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                   
                   <div className={`w-3 h-3 rounded-full ${
                     status === 'active' ? 'bg-blue-400 animate-pulse' :
-                    status === 'completed' ? 'bg-green-400' :
+                    status === 'completed' ? 'bg-cyan-400' :
                     'bg-gray-400'
                   }`}></div>
                 </div>
@@ -223,7 +223,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                   <div className="text-center py-4">
                     <div className={`${
                       isGlassmorphism 
-                        ? 'text-gray-200' 
+                        ? 'text-blue-200' 
                         : 'text-gray-500'
                     }`}>Waiting for previous steps...</div>
                   </div>
@@ -238,7 +238,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                     }`}></div>
                     <div className={`${
                       isGlassmorphism 
-                        ? 'text-gray-200' 
+                        ? 'text-blue-200' 
                         : 'text-gray-500'
                     }`}>Processing...</div>
                   </div>

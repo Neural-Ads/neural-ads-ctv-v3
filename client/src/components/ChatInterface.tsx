@@ -331,7 +331,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           <span className={`${
             isGlassmorphism 
-              ? 'text-gray-100' 
+              ? 'text-blue-100' 
               : 'text-gray-600'
           }`}>
             {isLoadingAdvertisers 
@@ -383,7 +383,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   </div>
                   <div className={`text-sm leading-relaxed whitespace-pre-wrap ${
                     message.type === 'user' || isGlassmorphism 
-                      ? 'text-gray-100' 
+                      ? 'text-blue-100' 
                       : 'text-gray-800'
                   }`}>
                     {message.content}
@@ -432,7 +432,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                     <span className={`text-sm ${
                       isGlassmorphism 
-                        ? 'text-gray-100' 
+                        ? 'text-blue-100' 
                         : 'text-gray-700'
                     }`}>
                       {agentState.avatar_state === 'analyzing' ? 'Analyzing your campaign data...' :
