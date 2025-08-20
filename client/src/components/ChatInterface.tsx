@@ -122,7 +122,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Format agent responses to be more conversational with multiple messages
   const formatAgentMessage = (content: string) => {
-    // Split long responses into multiple conversational messages
+    // Only split workflow-specific responses into multiple messages
+    // Keep conversational responses as single messages
     const responses = [];
     
     if (content.includes('Campaign parsing complete') || content.includes('parsing complete') || content.includes('campaign_data complete')) {
@@ -187,12 +188,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       return responses;
     }
     
-    // Default: break long messages into smaller parts
-    if (content.length > 150) {
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      return sentences.map(sentence => sentence.trim() + (sentence.includes('?') ? '' : '.'));
-    }
-    
+    // For conversational responses, keep as single message regardless of length
+    // This ensures data summaries and insights stay together
     return [content];
   };
 
@@ -253,9 +250,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       },
       {
         type: 'agent',
-        content: 'What campaign would you like to work on today?',
+        content: '📊 **Smart Data Questions I Can Answer:**\n\n🔍 **Advertiser Analysis**\n"What are Amazon\'s preferences?"\n"Show me Pfizer\'s campaign history"\n\n🎯 **Similar Advertisers**\n"Find advertisers similar to GMC"\n"Who targets similar audiences as Skechers?"\n\n📈 **Category Insights**\n"Show me automotive advertisers"\n"What are top performers in retail?"\n\n📡 **Network Performance**\n"What are fill rates for AMC network?"\n"Show network performance data"',
         timestamp: new Date(Date.now() + 3000).toISOString(),
         messageId: 'welcome-3'
+      },
+      {
+        type: 'agent',
+        content: 'What campaign would you like to work on today? You can ask me data questions or start planning a new campaign! 🚀',
+        timestamp: new Date(Date.now() + 4000).toISOString(),
+        messageId: 'welcome-4'
       }
     ];
   };
@@ -306,16 +309,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const suggestions = [
     {
+      category: 'DATA INSIGHTS',
+      text: "What are Amazon's preferences?"
+    },
+    {
       category: 'CAMPAIGN PLANNING',
-      text: `Plan a $250K awareness campaign for ${sampleAdvertisers[0]} targeting families`
+      text: "Plan a $250K awareness campaign for GMC targeting families"
     },
     {
-      category: 'MEDIA STRATEGY',
-      text: `Create a $500K conversion campaign for ${sampleAdvertisers[1] || sampleAdvertisers[0]} focusing on millennials`
+      category: 'ADVERTISER ANALYSIS',
+      text: "Find advertisers similar to Pfizer"
     },
     {
-      category: 'PRODUCT LAUNCH',
-      text: `Design a $750K brand building campaign for ${sampleAdvertisers[2] || sampleAdvertisers[0]} for new product launch`
+      category: 'NETWORK PERFORMANCE',
+      text: "What are fill rates for AMC network?"
     }
   ];
 
@@ -464,7 +471,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     ? 'text-gray-800' 
                     : 'text-gray-900'
                 }`}>
-                  Campaign Ideas
+                  Quick Start Ideas
                 </span>
               </div>
               <button

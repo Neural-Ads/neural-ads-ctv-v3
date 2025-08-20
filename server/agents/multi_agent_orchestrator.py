@@ -530,7 +530,7 @@ class MultiAgentOrchestrator:
             
             if self.current_step == WorkflowStep.FORECASTING:
                 print("📊 Starting forecasting re-run...")
-                result = await self._process_forecasting_step(message)
+                result = await self._process_forecasting()
                 print(f"✅ Forecasting re-run complete: {result.action}")
                 return result
             else:

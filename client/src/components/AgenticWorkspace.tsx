@@ -1013,6 +1013,60 @@ const AgenticWorkspace: React.FC = () => {
     event.target.value = '';
   };
 
+  const handleAudienceUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setChatMessages(prev => [...prev, {
+        type: 'agent',
+        content: '❌ Please upload a CSV file for audience data.',
+        timestamp: new Date().toISOString()
+      }]);
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('audience_file', file);
+
+      const response = await fetch('/api/upload-audience', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      // Show success message
+      setChatMessages(prev => [...prev, {
+        type: 'agent',
+        content: `✅ Audience file "${file.name}" uploaded successfully! ${result.rows_processed ? `${result.rows_processed} rows processed.` : ''}`,
+        timestamp: new Date().toISOString()
+      }]);
+      
+      // Append audience info to campaign input
+      const audienceInfo = `\n\n--- Uploaded Audience: ${file.name} ---\nAudience CSV file uploaded with ${result.rows_processed || 'multiple'} audience segments.`;
+      setCampaignInput(prev => prev + audienceInfo);
+      
+    } catch (error) {
+      console.error('Error uploading audience file:', error);
+      setChatMessages(prev => [...prev, {
+        type: 'agent',
+        content: '❌ Error uploading audience file. Please try again.',
+        timestamp: new Date().toISOString()
+      }]);
+    }
+    
+    // Clear the file input
+    event.target.value = '';
+  };
+
   // Processing Indicator Component
   const renderProcessingIndicator = () => {
     if (!isProcessing && !processingRef.current) return null;
@@ -1180,6 +1234,24 @@ const AgenticWorkspace: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <span>📎</span>
                         <span>Upload Brief</span>
+                      </div>
+                    </label>
+                    
+                    {/* Upload Audience CSV Button */}
+                    <label className={`cursor-pointer ${
+                      isGlassmorphism 
+                        ? 'neural-btn neural-btn-secondary' 
+                        : 'px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg border border-gray-300 transition-colors'
+                    }`}>
+                      <input
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        onChange={handleAudienceUpload}
+                      />
+                      <div className="flex items-center space-x-2">
+                        <span>👥</span>
+                        <span>Upload Audience</span>
                       </div>
                     </label>
                     

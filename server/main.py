@@ -1,4 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Request
+import shutil
+import csv
+from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from parser.module import parse_campaign
@@ -388,6 +391,52 @@ async def continue_workflow(request: Request = None):
             "message": f"Error continuing workflow: {str(e)}",
             "status": "error"
         }
+
+@app.post("/api/upload-audience")
+async def upload_audience_csv(audience_file: UploadFile = File(...)):
+    """Upload and store audience CSV file in the data folder."""
+    try:
+        # Validate file type
+        if not audience_file.filename.lower().endswith('.csv'):
+            raise HTTPException(status_code=400, detail="Only CSV files are allowed for audience uploads")
+        
+        # Create data directory if it doesn't exist
+        data_dir = Path("data")
+        data_dir.mkdir(exist_ok=True)
+        
+        # Create unique filename with timestamp
+        import datetime
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_filename = f"audience_{timestamp}_{audience_file.filename}"
+        file_path = data_dir / safe_filename
+        
+        # Save the file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(audience_file.file, buffer)
+        
+        # Count rows for feedback
+        rows_processed = 0
+        try:
+            with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
+                csv_reader = csv.reader(csvfile)
+                rows_processed = sum(1 for row in csv_reader) - 1  # Subtract header row
+        except Exception as e:
+            print(f"Warning: Could not count CSV rows: {e}")
+            rows_processed = None
+        
+        return {
+            "message": f"Audience file uploaded successfully",
+            "filename": safe_filename,
+            "original_filename": audience_file.filename,
+            "file_path": str(file_path),
+            "rows_processed": rows_processed,
+            "status": "success"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload audience file: {str(e)}")
 
 @app.get("/health")
 async def health_check():

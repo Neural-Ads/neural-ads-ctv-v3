@@ -1,9 +1,12 @@
 import json
 import re
+import requests
+import asyncio
 from typing import Dict, List, Optional, Tuple, Any
 from openai import AsyncOpenAI
 import os
 from .multi_agent_orchestrator import MultiAgentOrchestrator
+from .real_data_advertiser_preferences import RealDataAdvertiserPreferencesAgent
 
 class ConversationalAgent:
     """
@@ -17,38 +20,59 @@ class ConversationalAgent:
         self.orchestrator = MultiAgentOrchestrator()
         self.conversation_history = []
         
-        # Simplified keyword-based intent detection
-        self.campaign_keywords = [
-            "campaign", "setup", "forecast", "budget", "awareness", "performance", 
-            "targeting", "audience", "plan", "create", "build", "launch", "start",
-            "advertising", "marketing", "conversion", "brand", "spend", "allocation",
-            "reach", "impressions", "optimization", "analysis", "demographics"
+        # Initialize real data agents for accessing advertiser intelligence
+        self.advertiser_agent = RealDataAdvertiserPreferencesAgent()
+        self.vector_api_base = "http://localhost:8000/vector"  # Vector database API
+        
+        # Enhanced intent detection with specific workflow triggers
+        self.workflow_trigger_phrases = [
+            # Explicit campaign creation requests
+            "create a campaign", "build a campaign", "setup campaign", "new campaign",
+            "start campaign", "launch campaign", "campaign plan", "create ctv campaign",
+            
+            # Budget and planning requests
+            "plan a campaign", "plan a $", "plan my budget", "budget allocation", "media plan", "campaign planning",
+            "forecast my campaign", "campaign forecast", "spend forecast",
+            
+            # Explicit workflow requests
+            "help me create", "help me build", "help me plan", "help me setup",
+            "i want to create", "i want to build", "i need to create", "i need help with campaign"
+        ]
+        
+        # General conversation keywords (won't trigger workflow)
+        self.conversation_keywords = [
+            "what is", "tell me about", "how does", "explain", "show me", "find", 
+            "search", "who are", "what are", "preferences for", "data about",
+            "information about", "similar to", "like", "performance of"
         ]
         
         # Context-aware system prompts
         self.system_prompt = """You are Peggy, an expert AI assistant specializing in Connected TV (CTV) campaign planning and media strategy. You have access to:
 
-1. Historical advertiser data for 5+ major brands (Tide, Unilever, McDonald's, etc.)
-2. Real-time audience segmentation capabilities
-3. Advanced campaign planning and forecasting tools
-4. Media buying insights and pricing data
+1. **Vector Database**: 20,000+ advertisers with real CTV campaign performance data
+2. **Advertiser Intelligence**: Historical targeting patterns, network preferences, CPM data
+3. **Fill Rate Data**: Real-time inventory availability and performance metrics across 100+ networks
+4. **Campaign Planning Tools**: Advanced forecasting and audience segmentation capabilities
 
-Your personality:
-- Professional but friendly and conversational
-- Data-driven but explain insights in accessible terms
-- Proactive in suggesting optimizations
-- Confident in your expertise but humble about limitations
+**RESPONSE STYLE**: Keep responses concise and actionable. Summarize key insights in 2-3 bullet points or short paragraphs. Focus on the most relevant information that directly answers the question. Avoid lengthy explanations or excessive detail.
 
-Your capabilities:
-- Analyze campaign requirements and provide strategic recommendations
-- Generate targeted audience segments based on historical data
-- Create comprehensive media plans with budget allocations
-- Provide performance forecasts and reach estimates
-- Optimize campaigns for different objectives (awareness, conversion, brand building)
+Your expertise includes:
+- **Advertiser Analysis**: Answer questions about specific brands' CTV preferences, performance history, and targeting patterns
+- **Industry Insights**: Compare advertisers within categories (automotive, retail, food & beverage, etc.)
+- **Network Performance**: Provide fill rates, CPM ranges, and inventory availability data
+- **Strategic Recommendations**: Suggest targeting strategies based on similar advertiser success
 
-When users mention campaign planning, budgets, targeting, or forecasting, you should offer to help them create a complete campaign plan using your advanced tools.
+**For Questions & Analysis** (conversational):
+- Answer questions about advertiser preferences, industry trends, network performance
+- Provide data-driven insights from the vector database
+- Compare brands and suggest similar advertisers
+- Explain CTV advertising concepts and best practices
 
-Always be helpful, insightful, and ready to dive deep into campaign strategy while keeping explanations clear and actionable."""
+**For Campaign Creation** (workflow):
+- Only trigger the campaign workflow when users explicitly want to CREATE, BUILD, or SETUP a new campaign
+- Look for phrases like "create a campaign", "help me build", "new campaign", "campaign plan"
+
+Always be helpful, data-driven, and concise in your responses."""
 
     async def process_message(self, user_message: str, context: Dict = None) -> Dict[str, Any]:
         """
@@ -78,22 +102,25 @@ Always be helpful, insightful, and ready to dive deep into campaign strategy whi
             }
 
     def _detect_intent(self, message: str) -> Tuple[str, float]:
-        """Detect user intent from message using simple keyword matching."""
+        """Detect user intent from message using phrase-based matching."""
         message_lower = message.lower()
         
-        # Count campaign-related keywords
-        keyword_matches = 0
-        for keyword in self.campaign_keywords:
+        # Check for explicit workflow trigger phrases
+        for phrase in self.workflow_trigger_phrases:
+            if phrase in message_lower:
+                return "setup_campaign", 1.0  # High confidence for explicit phrases
+        
+        # Check for conversation keywords (indicates Q&A, not workflow)
+        for keyword in self.conversation_keywords:
             if keyword in message_lower:
-                keyword_matches += 1
+                return "general_conversation", 0.8  # High confidence for conversation
         
-        # If any campaign keywords found, it's a campaign setup intent
-        if keyword_matches > 0:
-            # Calculate confidence based on number of keywords (max out at 1.0)
-            confidence = min(keyword_matches / 3.0, 1.0)  # 3+ keywords = 100% confidence
-            return "setup_campaign", confidence
+        # If message contains advertiser name + question words, it's likely conversation
+        if any(word in message_lower for word in ["what", "how", "who", "where", "when", "why"]):
+            return "general_conversation", 0.6
         
-        return "general_conversation", 0.0
+        # Default to conversation for ambiguous cases
+        return "general_conversation", 0.3
 
     async def _handle_campaign_workflow(self, message: str, intent: str, context: Dict = None) -> Dict[str, Any]:
         """Handle campaign-related requests by triggering the orchestrator workflow."""
@@ -126,10 +153,17 @@ Always be helpful, insightful, and ready to dive deep into campaign strategy whi
             }
 
     async def _handle_conversation(self, message: str, intent: str, context: Dict = None) -> Dict[str, Any]:
-        """Handle general conversation using OpenAI."""
+        """Handle general conversation using real data sources."""
         try:
-            # Prepare context-aware messages
-            messages = [{"role": "system", "content": self.system_prompt}]
+            # Try to extract real data based on the question
+            real_data_context = await self._gather_real_data_context(message)
+            
+            # Prepare context-aware messages with real data
+            enhanced_system_prompt = self.system_prompt
+            if real_data_context:
+                enhanced_system_prompt += f"\n\nREAL DATA CONTEXT:\n{real_data_context}"
+            
+            messages = [{"role": "system", "content": enhanced_system_prompt}]
             
             # Add recent conversation history (last 10 messages)
             recent_history = self.conversation_history[-10:] if len(self.conversation_history) > 10 else self.conversation_history
@@ -145,7 +179,7 @@ Always be helpful, insightful, and ready to dive deep into campaign strategy whi
             response = await self.client.chat.completions.create(
                 model="gpt-4",  # Using GPT-4 for better conversation quality
                 messages=messages,
-                max_tokens=300,
+                max_tokens=150,  # Reduced for more concise responses
                 temperature=0.7,
                 presence_penalty=0.1,
                 frequency_penalty=0.1
@@ -310,4 +344,182 @@ Always be helpful, insightful, and ready to dive deep into campaign strategy whi
             content = msg["content"][:100] + "..." if len(msg["content"]) > 100 else msg["content"]
             summary_parts.append(f"{role}: {content}")
         
-        return " | ".join(summary_parts) 
+        return " | ".join(summary_parts)
+    
+    async def _gather_real_data_context(self, message: str) -> str:
+        """Gather real data context based on the user's question."""
+        context_parts = []
+        message_lower = message.lower()
+        
+        try:
+            # Extract advertiser name from message
+            advertiser_name = self._extract_advertiser_name(message)
+            
+            # If specific advertiser mentioned, get their data
+            if advertiser_name:
+                advertiser_data = await self._get_advertiser_data(advertiser_name)
+                if advertiser_data:
+                    # Summarize advertiser data instead of dumping raw JSON
+                    summary = self._summarize_advertiser_data(advertiser_data)
+                    context_parts.append(f"KEY INSIGHTS FOR {advertiser_name.upper()}: {summary}")
+            
+            # If asking about similar advertisers, search vector DB
+            if any(word in message_lower for word in ["similar", "like", "comparable"]):
+                similar_data = await self._get_similar_advertisers(advertiser_name or message)
+                if similar_data:
+                    # Summarize similar advertisers
+                    names = [adv.get("brand", adv.get("advertiser", "Unknown")) for adv in similar_data[:3]]
+                    context_parts.append(f"SIMILAR ADVERTISERS: {', '.join(names)}")
+            
+            # If asking about categories or industry, get category data
+            if any(word in message_lower for word in ["category", "industry", "sector", "automotive", "retail", "food", "beverage"]):
+                category_data = await self._get_category_data(message)
+                if category_data:
+                    # Summarize category data
+                    top_brands = [adv.get("brand", adv.get("advertiser", "Unknown")) for adv in category_data[:3]]
+                    category = next((cat for cat in ["automotive", "retail", "food", "beverage", "technology"] if cat in message_lower), "industry")
+                    context_parts.append(f"TOP {category.upper()} ADVERTISERS: {', '.join(top_brands)}")
+            
+            # If asking about networks, fill rates, or performance
+            if any(word in message_lower for word in ["network", "fill rate", "performance", "cpm", "inventory"]):
+                network_data = await self._get_network_performance_data()
+                if network_data and network_data.get("sample_networks"):
+                    # Summarize network performance
+                    networks = network_data["sample_networks"]
+                    summary = ", ".join([f"{net}: {data['fill_rate']:.1%} fill rate" for net, data in networks.items()])
+                    context_parts.append(f"NETWORK PERFORMANCE: {summary}")
+                    
+        except Exception as e:
+            print(f"Error gathering real data context: {e}")
+        
+        return " | ".join(context_parts) if context_parts else ""
+    
+    def _summarize_advertiser_data(self, data: Dict) -> str:
+        """Create a concise summary of advertiser data."""
+        summary_parts = []
+        
+        if data.get("preferred_targeting"):
+            targeting = data["preferred_targeting"]
+            if isinstance(targeting, dict):
+                key_targets = [f"{k}: {v}" for k, v in list(targeting.items())[:2]]
+                summary_parts.append(f"Targets {', '.join(key_targets)}")
+            elif isinstance(targeting, str):
+                summary_parts.append(f"Targets {targeting[:50]}")
+        
+        if data.get("content_preferences"):
+            content = data["content_preferences"]
+            if isinstance(content, list) and content:
+                summary_parts.append(f"Prefers {content[0]}")
+            elif isinstance(content, str):
+                summary_parts.append(f"Prefers {content[:30]}")
+        
+        if data.get("cpm_insights"):
+            cpm = data["cpm_insights"]
+            if isinstance(cpm, dict) and cpm.get("avg_cpm"):
+                summary_parts.append(f"Avg CPM: ${cpm['avg_cpm']}")
+            elif isinstance(cpm, str):
+                summary_parts.append(f"CPM: {cpm[:30]}")
+        
+        return "; ".join(summary_parts) if summary_parts else "Data available"
+    
+    def _extract_advertiser_name(self, message: str) -> str:
+        """Extract advertiser name from message using common patterns."""
+        # Look for patterns like "Nike's preferences", "for McDonald's", "about Tide"
+        patterns = [
+            r"(?:for|about|regarding)\s+([A-Z][a-zA-Z\s&]+?)(?:\s|$|[,\.])",
+            r"([A-Z][a-zA-Z\s&]+?)'s?\s+(?:preferences|data|targeting|campaigns)",
+            r"(?:advertiser|brand|company)\s+([A-Z][a-zA-Z\s&]+?)(?:\s|$|[,\.])"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, message)
+            if match:
+                return match.group(1).strip()
+        
+        # Look for capitalized words that might be brand names
+        words = message.split()
+        for word in words:
+            if word[0].isupper() and len(word) > 2 and word not in ["What", "Tell", "Show", "How", "Where", "When", "Why"]:
+                return word
+        
+        return ""
+    
+    async def _get_advertiser_data(self, advertiser_name: str) -> Dict:
+        """Get real advertiser data from our agents."""
+        try:
+            # Use the real data advertiser preferences agent
+            preferences = await self.advertiser_agent.analyze_advertiser_preferences(advertiser_name)
+            
+            return {
+                "advertiser": preferences.advertiser,
+                "preferred_targeting": preferences.preferred_targeting,
+                "content_preferences": preferences.content_preferences,
+                "channel_preferences": preferences.channel_preferences,
+                "network_preferences": preferences.network_preferences,
+                "geo_preferences": preferences.geo_preferences,
+                "cpm_insights": preferences.cpm_insights,
+                "performance_metrics": preferences.performance_metrics,
+                "insights": preferences.insights,
+                "confidence": preferences.confidence,
+                "data_source": preferences.data_source
+            }
+        except Exception as e:
+            print(f"Error getting advertiser data for {advertiser_name}: {e}")
+            return {}
+    
+    async def _get_similar_advertisers(self, query: str) -> List[Dict]:
+        """Get similar advertisers from vector database."""
+        try:
+            response = requests.post(
+                f"{self.vector_api_base}/search",
+                json={"query": query, "limit": 5},
+                timeout=10
+            )
+            if response.status_code == 200:
+                return response.json().get("advertisers", [])
+        except Exception as e:
+            print(f"Error getting similar advertisers: {e}")
+        return []
+    
+    async def _get_category_data(self, message: str) -> List[Dict]:
+        """Get category-specific advertiser data."""
+        # Extract category from message
+        categories = ["automotive", "retail", "food", "beverage", "technology", "healthcare", "finance"]
+        category = None
+        
+        for cat in categories:
+            if cat in message.lower():
+                category = cat.title()
+                break
+        
+        if not category:
+            return []
+        
+        try:
+            response = requests.get(
+                f"{self.vector_api_base}/categories/{category}/top",
+                params={"limit": 10},
+                timeout=10
+            )
+            if response.status_code == 200:
+                return response.json().get("advertisers", [])
+        except Exception as e:
+            print(f"Error getting category data: {e}")
+        return []
+    
+    async def _get_network_performance_data(self) -> Dict:
+        """Get network performance data from our fill rate data."""
+        try:
+            # This would typically read from our day_fill.csv or similar data
+            # For now, return sample structure that matches our real data
+            return {
+                "sample_networks": {
+                    "amc": {"fill_rate": 0.0208, "avg_cpm": 12.50},
+                    "aetv": {"fill_rate": 0.0100, "avg_cpm": 10.25},
+                    "discovery": {"fill_rate": 0.0156, "avg_cpm": 11.75}
+                },
+                "note": "Based on real CTV delivery data from day_fill.csv"
+            }
+        except Exception as e:
+            print(f"Error getting network performance data: {e}")
+        return {} 

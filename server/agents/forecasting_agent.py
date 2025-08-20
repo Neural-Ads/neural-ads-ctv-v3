@@ -21,12 +21,26 @@ class WeeklyForecast:
     notes: str
 
 @dataclass
+class CampaignForecast:
+    campaign_duration: str
+    campaign_dates: str
+    total_inventory_available_mm: float
+    forecasted_impressions_mm: float
+    fill_rate_percent: float
+    effective_cpm_dollars: float
+    estimated_reach: int
+    frequency: float
+    notes: str
+
+@dataclass
 class ForecastingResult:
     advertiser: str
     campaign_total_budget: float
     weekly_forecasts: List[WeeklyForecast]
+    campaign_forecast: CampaignForecast
     month_totals: Dict[str, float]
     campaign_totals: Dict[str, float]
+    performance_breakdown: Dict[str, Any]
     forecasting_insights: List[str]
     confidence: float
 
@@ -88,12 +102,146 @@ class ForecastingAgent:
             "last_updated": "2024-01-15T10:00:00Z"
         }
     
+    def _calculate_targeting_multiplier(self, targeting_criteria: Optional[Dict[str, Any]]) -> float:
+        """Calculate inventory availability multiplier based on targeting criteria"""
+        if not targeting_criteria:
+            return 1.0
+        
+        multiplier = 1.0
+        
+        # Network targeting - more specific networks reduce available inventory
+        networks = targeting_criteria.get("networks", [])
+        if networks and len(networks) < 5:  # Fewer than 5 networks = more targeted
+            multiplier *= 0.8
+        elif networks and len(networks) < 10:
+            multiplier *= 0.9
+            
+        # Geographic targeting - more specific geo reduces inventory
+        geo = targeting_criteria.get("geo", [])
+        if geo and any("local" in g.lower() or "city" in g.lower() for g in geo):
+            multiplier *= 0.7  # Local targeting significantly reduces inventory
+        elif geo and len(geo) < 5:
+            multiplier *= 0.85
+            
+        # Content targeting - specific content preferences reduce inventory
+        content = targeting_criteria.get("content", [])
+        if content and len(content) < 3:
+            multiplier *= 0.9
+            
+        return max(0.3, multiplier)  # Never reduce below 30% of base inventory
+    
+    def _calculate_frequency_impact(self, target_frequency: Optional[float], base_reach: float) -> Dict[str, float]:
+        """Calculate reach and frequency adjustments based on target frequency"""
+        if not target_frequency:
+            return {"reach": base_reach, "frequency": 2.5}
+            
+        # Higher frequency generally means lower reach for same budget
+        if target_frequency >= 3.0:
+            adjusted_reach = base_reach * 0.85  # Higher frequency = lower reach
+        elif target_frequency >= 2.5:
+            adjusted_reach = base_reach * 0.95
+        else:
+            adjusted_reach = base_reach * 1.05  # Lower frequency = higher reach
+            
+        return {"reach": max(adjusted_reach, base_reach * 0.7), "frequency": target_frequency}
+    
+    def _apply_parameter_adjustments(self, forecast: WeeklyForecast, inventory_multiplier: float, target_frequency: Optional[float]) -> WeeklyForecast:
+        """Apply parameter-based adjustments to weekly forecast"""
+        
+        # Apply inventory multiplier to available inventory and impressions
+        adjusted_inventory = forecast.inventory_available_mm * inventory_multiplier
+        adjusted_impressions = min(forecast.forecasted_impressions_mm, adjusted_inventory)
+        
+        # Calculate new fill rate based on adjusted inventory
+        adjusted_fill_rate = min((adjusted_impressions / forecast.forecasted_impressions_mm) * forecast.fill_rate_percent, 100.0)
+        
+        # Adjust eCPM based on targeting difficulty (more targeted = higher eCPM)
+        ecpm_multiplier = 2.0 - inventory_multiplier  # Lower inventory availability = higher eCPM
+        adjusted_ecpm = forecast.ecpm_dollars * ecpm_multiplier
+        
+        # Add frequency impact notes
+        frequency_note = ""
+        if target_frequency:
+            if target_frequency >= 3.0:
+                frequency_note = f" | High frequency target ({target_frequency:.1f}x) may reduce reach"
+            elif target_frequency <= 2.0:
+                frequency_note = f" | Low frequency target ({target_frequency:.1f}x) increases reach potential"
+        
+        return WeeklyForecast(
+            week_number=forecast.week_number,
+            week_dates=forecast.week_dates,
+            inventory_available_mm=round(adjusted_inventory, 2),
+            forecasted_impressions_mm=round(adjusted_impressions, 2),
+            fill_rate_percent=round(adjusted_fill_rate, 1),
+            ecpm_dollars=round(adjusted_ecpm, 2),
+            notes=forecast.notes + frequency_note
+        )
+    
+    def _generate_campaign_forecast(self, weekly_forecasts: List[WeeklyForecast], campaign_timeline: str, target_frequency: Optional[float]) -> CampaignForecast:
+        """Generate campaign-level forecast from weekly forecasts"""
+        if not weekly_forecasts:
+            raise ValueError("No weekly forecasts available")
+        
+        # Calculate campaign totals
+        total_inventory = sum(f.inventory_available_mm for f in weekly_forecasts)
+        total_impressions = sum(f.forecasted_impressions_mm for f in weekly_forecasts)
+        avg_fill_rate = sum(f.fill_rate_percent for f in weekly_forecasts) / len(weekly_forecasts)
+        avg_ecpm = sum(f.ecpm_dollars for f in weekly_forecasts) / len(weekly_forecasts)
+        
+        # Calculate campaign dates
+        first_week = weekly_forecasts[0].week_dates.split(' to ')[0]
+        last_week = weekly_forecasts[-1].week_dates.split(' to ')[1]
+        campaign_dates = f"{first_week} to {last_week}"
+        
+        # Estimate reach and frequency
+        base_reach = min(int(total_impressions * 1000 * 0.6), 50000000)  # Rough reach estimation
+        frequency_data = self._calculate_frequency_impact(target_frequency, base_reach)
+        
+        # Generate campaign notes
+        notes = f"Campaign spans {len(weekly_forecasts)} weeks"
+        if target_frequency:
+            notes += f" with target frequency of {target_frequency:.1f}x"
+        
+        return CampaignForecast(
+            campaign_duration=campaign_timeline,
+            campaign_dates=campaign_dates,
+            total_inventory_available_mm=round(total_inventory, 2),
+            forecasted_impressions_mm=round(total_impressions, 2),
+            fill_rate_percent=round(avg_fill_rate, 1),
+            effective_cpm_dollars=round(avg_ecpm, 2),
+            estimated_reach=int(frequency_data["reach"]),
+            frequency=frequency_data["frequency"],
+            notes=notes
+        )
+    
+    def _generate_performance_breakdown(self, weekly_forecasts: List[WeeklyForecast]) -> Dict[str, Any]:
+        """Generate performance breakdown for frontend display"""
+        return {
+            "weekly_data": [
+                {
+                    "week": f.week_number,
+                    "dates": f.week_dates,
+                    "impressions": f.forecasted_impressions_mm,
+                    "fill_rate": f.fill_rate_percent,
+                    "ecpm": f.ecpm_dollars
+                } for f in weekly_forecasts
+            ],
+            "summary": {
+                "total_weeks": len(weekly_forecasts),
+                "avg_weekly_impressions": sum(f.forecasted_impressions_mm for f in weekly_forecasts) / len(weekly_forecasts),
+                "avg_fill_rate": sum(f.fill_rate_percent for f in weekly_forecasts) / len(weekly_forecasts),
+                "avg_ecpm": sum(f.ecpm_dollars for f in weekly_forecasts) / len(weekly_forecasts)
+            }
+        }
+    
     async def generate_forecast(
         self,
         advertiser: str,
         line_items: List[Dict[str, Any]],
         campaign_budget: float,
-        campaign_timeline: str = "4 weeks"
+        campaign_timeline: str = "4 weeks",
+        targeting_criteria: Optional[Dict[str, Any]] = None,
+        target_frequency: Optional[float] = None
     ) -> ForecastingResult:
         """
         Generate weekly spend forecast based on line items and inventory availability
@@ -103,15 +251,22 @@ class ForecastingAgent:
             line_items: List of line item dictionaries from campaign generation
             campaign_budget: Total campaign budget
             campaign_timeline: Campaign duration (default 4 weeks)
+            targeting_criteria: Optional targeting criteria affecting inventory availability
+            target_frequency: Optional target frequency affecting reach calculations
         
         Returns:
             ForecastingResult with weekly forecasts and insights
         """
         
         print(f"🔮 Generating forecast for {advertiser} - ${campaign_budget:,.2f} budget")
+        print(f"📊 Campaign parameters: timeline={campaign_timeline}, target_frequency={target_frequency}")
         
         # Parse timeline to get number of weeks
         num_weeks = self._parse_timeline_to_weeks(campaign_timeline)
+        
+        # Apply targeting criteria adjustments to inventory availability
+        inventory_multiplier = self._calculate_targeting_multiplier(targeting_criteria)
+        print(f"🎯 Targeting inventory multiplier: {inventory_multiplier:.2f}")
         
         # Calculate weekly budget distribution
         weekly_budgets = self._distribute_budget_weekly(campaign_budget, num_weeks)
@@ -125,11 +280,26 @@ class ForecastingAgent:
                 line_items,
                 advertiser
             )
-            weekly_forecasts.append(forecast)
+            
+            # Apply targeting and frequency adjustments
+            adjusted_forecast = self._apply_parameter_adjustments(
+                forecast, 
+                inventory_multiplier, 
+                target_frequency
+            )
+            weekly_forecasts.append(adjusted_forecast)
         
         # Calculate totals
         month_totals = self._calculate_month_totals(weekly_forecasts)
         campaign_totals = self._calculate_campaign_totals(weekly_forecasts)
+        
+        # Generate campaign-level forecast
+        campaign_forecast = self._generate_campaign_forecast(
+            weekly_forecasts, campaign_timeline, target_frequency
+        )
+        
+        # Generate performance breakdown
+        performance_breakdown = self._generate_performance_breakdown(weekly_forecasts)
         
         # Generate insights
         insights = self._generate_forecasting_insights(weekly_forecasts, line_items, advertiser)
@@ -141,8 +311,10 @@ class ForecastingAgent:
             advertiser=advertiser,
             campaign_total_budget=campaign_budget,
             weekly_forecasts=weekly_forecasts,
+            campaign_forecast=campaign_forecast,
             month_totals=month_totals,
             campaign_totals=campaign_totals,
+            performance_breakdown=performance_breakdown,
             forecasting_insights=insights,
             confidence=confidence
         )
