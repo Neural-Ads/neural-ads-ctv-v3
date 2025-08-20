@@ -61,7 +61,7 @@ const AgenticWorkspace: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [campaignInput, setCampaignInput] = useState('');
   const [isProgressCollapsed, setIsProgressCollapsed] = useState(false);
-  const [isProTipVisible, setIsProTipVisible] = useState(true);
+
   const [showAudienceInsights, setShowAudienceInsights] = useState(false);
   
   // Editable campaign parameters
@@ -926,49 +926,7 @@ const AgenticWorkspace: React.FC = () => {
                 </div>
               </div>
               
-              {/* Pro Tip */}
-              {isProTipVisible && (
-                <div className={`mb-4 p-2 rounded-md max-w-sm ${
-                  isGlassmorphism 
-                    ? 'bg-yellow-800 bg-opacity-30 backdrop-blur-sm border border-yellow-600' 
-                    : 'bg-yellow-50 bg-opacity-30 border border-yellow-200'
-                }`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-1.5">
-                      <span className="text-yellow-400 text-sm">💡</span>
-                      <div className="flex-1">
-                        <div className={`text-xs font-medium mb-0.5 uppercase tracking-wide ${
-                          isGlassmorphism 
-                            ? 'text-yellow-300' 
-                            : 'text-yellow-700'
-                        }`}>
-                          Pro Tip
-                        </div>
-                        <span className={`text-xs leading-snug ${
-                          isGlassmorphism 
-                            ? 'text-yellow-100' 
-                            : 'text-yellow-800'
-                        }`}>
-                          Mention specific advertisers from our database for better insights.
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setIsProTipVisible(false)}
-                      className={`ml-1.5 p-0.5 rounded hover:bg-opacity-20 transition-colors ${
-                        isGlassmorphism 
-                          ? 'text-yellow-300 hover:bg-yellow-300' 
-                          : 'text-yellow-600 hover:bg-yellow-600'
-                      }`}
-                      title="Close tip"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
+
 
               {/* Helper Text */}
               <div className={`mt-6 p-4 rounded-lg ${
