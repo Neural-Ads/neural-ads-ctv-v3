@@ -515,7 +515,7 @@ const AgenticWorkspace: React.FC = () => {
   const steps = [
     { id: 'campaign_data', title: 'Campaign Parameters', icon: '📊', color: 'blue' },
     { id: 'advertiser_preferences', title: 'Historical Data', icon: '📈', color: 'purple' },
-    { id: 'audience_generation', title: 'Audience Analysis', icon: '🎯', color: 'green' },
+    { id: 'audience_generation', title: 'Audience Analysis', icon: '🎯', color: 'orange' },
     { id: 'campaign_generation', title: 'Media Plan', icon: '⚡', color: 'orange' },
     { id: 'forecasting', title: 'Campaign Setup', icon: '⚙️', color: 'indigo' }
   ];
