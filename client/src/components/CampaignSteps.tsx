@@ -254,8 +254,8 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                           : 'text-gray-900'
                       }`}>Confidence</span>
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        stepData.confidence > 80 ? 'bg-orange-500 text-white' :
-                        stepData.confidence > 60 ? 'bg-yellow-500 text-white' : 'bg-blue-500 text-white'
+                        stepData.confidence > 80 ? 'bg-blue-500 text-white' :
+                        stepData.confidence > 60 ? 'bg-blue-400 text-white' : 'bg-blue-300 text-white'
                       }`}>
                         {stepData.confidence.toFixed(0)}%
                       </span>
@@ -268,9 +268,9 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                     }`}>
                       <div 
                         className={`h-2 rounded-full transition-all duration-500 ${
-                          stepData.confidence > 80 ? 'bg-gradient-to-r from-orange-400 to-orange-500' :
-                          stepData.confidence > 60 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
-                          'bg-gradient-to-r from-red-400 to-red-500'
+                          stepData.confidence > 80 ? 'bg-gradient-to-r from-blue-400 to-blue-500' :
+                          stepData.confidence > 60 ? 'bg-gradient-to-r from-blue-300 to-blue-400' :
+                          'bg-gradient-to-r from-blue-200 to-blue-300'
                         }`}
                         style={{ width: `${Math.min(stepData.confidence, 100)}%` }}
                       ></div>
