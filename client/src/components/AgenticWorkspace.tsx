@@ -752,7 +752,7 @@ const AgenticWorkspace: React.FC = () => {
                     placeholder="Paste your campaign brief here or describe your requirements:&#10;&#10;• Advertiser: [Brand Name]&#10;• Budget: $[Amount]&#10;• Objective: [Brand Awareness/Performance/etc.]&#10;• Target Audience: [Demographics]&#10;• Timeline: [Start - End Date]&#10;• Additional Notes: [Any specific requirements]"
                     className={`w-full h-40 p-4 rounded-lg resize-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
                       isGlassmorphism 
-                        ? 'neural-glass border border-white border-opacity-20 text-white placeholder-gray-300 backdrop-blur-lg' 
+                        ? 'neural-glass border border-white border-opacity-20 text-gray-800 placeholder-gray-500 backdrop-blur-lg' 
                         : 'border border-gray-300 bg-white text-gray-900 placeholder-gray-500'
                     }`}
                     value={campaignInput}
@@ -1421,7 +1421,7 @@ const AgenticWorkspace: React.FC = () => {
                           {item.audience}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex px-2 py-1 text-xs font-medium bg-orange-500 bg-opacity-20 text-orange-200 rounded-full border border-orange-400 border-opacity-30">
+                          <span className="inline-flex px-2 py-1 text-xs font-medium bg-orange-500 bg-opacity-20 text-orange-800 rounded-full border border-orange-400 border-opacity-30">
                             Ready
                           </span>
                         </td>

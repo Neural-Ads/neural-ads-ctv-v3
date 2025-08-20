@@ -331,7 +331,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
           <span className={`${
             isGlassmorphism 
-              ? 'text-blue-100' 
+              ? 'text-gray-700' 
               : 'text-gray-600'
           }`}>
             {isLoadingAdvertisers 
@@ -359,10 +359,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <div className={`max-w-[85%] p-3 rounded-2xl ${
               message.type === 'user' 
                 ? isGlassmorphism 
-                  ? 'neural-glass-info text-white' 
+                  ? 'neural-glass-info text-gray-800' 
                   : 'bg-blue-600 text-white'
                 : isGlassmorphism 
-                ? 'neural-glass-panel text-white' 
+                ? 'neural-glass-panel text-gray-800' 
                 : 'bg-white border border-gray-200 text-gray-900'
             }`}>
               <div className="flex items-start space-x-3">
@@ -376,14 +376,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <div className="flex-1">
                   <div className={`text-xs font-semibold mb-1 ${
                     message.type === 'user' || isGlassmorphism 
-                      ? 'text-white opacity-90' 
+                      ? 'text-gray-800 opacity-90' 
                       : 'text-gray-600'
                   }`}>
                     {message.type === 'user' ? 'You' : 'Peggy'}
                   </div>
                   <div className={`text-sm leading-relaxed whitespace-pre-wrap ${
                     message.type === 'user' || isGlassmorphism 
-                      ? 'text-blue-100' 
+                      ? 'text-gray-700' 
                       : 'text-gray-800'
                   }`}>
                     {message.content}
@@ -419,7 +419,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <div className="flex-1">
                   <div className={`text-xs font-semibold mb-1 ${
                     isGlassmorphism 
-                      ? 'text-white opacity-90' 
+                      ? 'text-gray-800 opacity-90' 
                       : 'text-gray-600'
                   }`}>
                     Peggy
@@ -432,7 +432,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                     <span className={`text-sm ${
                       isGlassmorphism 
-                        ? 'text-blue-100' 
+                        ? 'text-gray-700' 
                         : 'text-gray-700'
                     }`}>
                       {agentState.avatar_state === 'analyzing' ? 'Analyzing your campaign data...' :
@@ -461,7 +461,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <span className="text-2xl">✨</span>
                 <span className={`text-sm font-semibold ${
                   isGlassmorphism 
-                    ? 'text-white' 
+                    ? 'text-gray-800' 
                     : 'text-gray-900'
                 }`}>
                   Campaign Ideas
@@ -508,7 +508,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       </div>
                       <p className={`text-xs leading-relaxed ${
                         isGlassmorphism 
-                          ? 'text-white' 
+                          ? 'text-gray-800' 
                           : 'text-gray-900'
                       }`}>
                         {suggestion.text}
@@ -543,7 +543,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 placeholder="Ask me about campaign planning, audience targeting, or media strategy..."
                 className={`w-full px-4 py-3 text-sm border-0 rounded-xl bg-transparent focus:outline-none resize-none ${
                   isGlassmorphism 
-                    ? 'text-white placeholder-gray-300' 
+                    ? 'text-gray-800 placeholder-gray-600' 
                     : 'text-gray-900 placeholder-gray-500'
                 }`}
                 disabled={isProcessing}

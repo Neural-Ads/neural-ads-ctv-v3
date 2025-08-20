@@ -1080,57 +1080,45 @@ body {
 
 /* Enhanced Typography for Better Readability */
 .neural-heading-1 {
-  @apply text-2xl font-bold text-white tracking-tight;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  @apply text-2xl font-bold text-gray-900 tracking-tight;
 }
 
 .neural-heading-2 {
-  @apply text-xl font-semibold text-white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  @apply text-xl font-semibold text-gray-900;
 }
 
 .neural-heading-3 {
-  @apply text-lg font-semibold text-white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  @apply text-lg font-semibold text-gray-900;
 }
 
-/* Enhanced Text Readability Classes */
+/* Enhanced Text Readability Classes - Dark Grey for Better Readability */
 .neural-text-primary {
-  @apply text-white font-medium;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  @apply text-gray-800 font-medium;
 }
 
 .neural-text-secondary {
-  @apply text-gray-100 font-normal;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  @apply text-gray-700 font-normal;
 }
 
 .neural-text-muted {
-  @apply text-gray-200 font-normal;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  @apply text-gray-600 font-normal;
 }
 
 .neural-text-emphasis {
-  @apply text-white font-semibold;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  @apply text-gray-900 font-semibold;
 }
 
 /* High Contrast Text for Better Readability */
 .neural-text-contrast {
-  @apply text-white font-medium;
-  text-shadow: 
-    0 1px 2px rgba(0, 0, 0, 0.5),
-    0 0 8px rgba(0, 0, 0, 0.3);
+  @apply text-gray-900 font-medium;
 }
 
 .neural-text-label {
-  @apply text-gray-100 font-medium text-sm;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  @apply text-gray-700 font-medium text-sm;
 }
 
 .neural-text-value {
-  @apply text-white font-semibold;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  @apply text-gray-800 font-semibold;
 }
 
 .neural-text-body {
@@ -1438,10 +1426,10 @@ body {
   .neural-heading-1,
   .neural-heading-2,
   .neural-heading-3 {
-    @apply text-white;
+    @apply text-gray-900;
   }
 
   .neural-text-body {
-    @apply text-gray-300;
+    @apply text-gray-700;
   }
 }
