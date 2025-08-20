@@ -50,7 +50,7 @@ const ForecastingTable: React.FC<ForecastingTableProps> = ({ data, confidence })
   };
 
   const getFillRateColor = (fillRate: number): string => {
-    if (fillRate >= 85) return 'text-green-400';
+    if (fillRate >= 85) return 'text-orange-400';
     if (fillRate >= 70) return 'text-yellow-400';
     return 'text-red-400';
   };
@@ -79,7 +79,7 @@ const ForecastingTable: React.FC<ForecastingTableProps> = ({ data, confidence })
               ? 'neural-text-label' 
               : 'text-gray-700'
           }`}>Forecast Confidence</div>
-          <div className={`text-lg font-semibold ${confidence >= 80 ? 'text-green-400' : confidence >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+          <div className={`text-lg font-semibold ${confidence >= 80 ? 'text-orange-400' : confidence >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
             {confidence}%
           </div>
         </div>

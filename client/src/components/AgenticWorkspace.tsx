@@ -1304,7 +1304,7 @@ const AgenticWorkspace: React.FC = () => {
                           {item.audience}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-500 bg-opacity-20 text-green-200 rounded-full border border-green-400 border-opacity-30">
+                          <span className="inline-flex px-2 py-1 text-xs font-medium bg-orange-500 bg-opacity-20 text-orange-200 rounded-full border border-orange-400 border-opacity-30">
                             Ready
                           </span>
                         </td>
@@ -1455,8 +1455,8 @@ const AgenticWorkspace: React.FC = () => {
                         }`}>{segment.name}</h4>
                         <div className={`text-sm font-medium px-3 py-1 rounded-full ${
                           isGlassmorphism 
-                            ? 'bg-green-500/20 text-green-300' 
-                            : 'bg-green-100 text-green-700'
+                            ? 'bg-orange-500/20 text-orange-300' 
+                            : 'bg-orange-100 text-orange-700'
                         }`}>
                           {segment.scale.toLocaleString()} HH
                         </div>

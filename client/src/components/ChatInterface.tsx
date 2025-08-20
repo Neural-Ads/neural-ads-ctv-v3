@@ -328,7 +328,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           : 'border-b border-gray-200'
       }`}>
         <div className="flex items-center space-x-2 text-sm">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
           <span className={`${
             isGlassmorphism 
               ? 'text-blue-100' 
