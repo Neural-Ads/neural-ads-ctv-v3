@@ -1,5 +1,30 @@
 # Neural Ads CTV Platform - Version History
 
+## Version 3.2.0 - "Reforecast & Campaign Setup" (December 2024)
+**Status**: ✅ Production Ready
+
+### Key Achievements
+- 🔮 **NEW**: Reforecast functionality in forecasting step campaign setup panel
+- ⚙️ **NEW**: Complete campaign setup form in forecasting step with all editable fields
+- 🔄 **NEW**: Real-time forecast updates when parameters change
+- 📊 **IMPROVED**: Proper workflow separation - setup in forecasting step, results in results panel
+- 🎯 **ENHANCED**: Auto-population of campaign parameters from previous workflow steps
+- 🧹 **CLEANED**: Removed redundant campaign setup summary from forecasting results panel
+
+### Technical Details
+- Forecasting Step Integration: Added dedicated campaign setup form to forecasting workflow step
+- Smart Parameter Management: Auto-population and real-time synchronization of editable parameters
+- Workflow Optimization: Proper separation of concerns between setup and results panels
+- Interface Cleanup: Simplified CampaignForecastTable to focus purely on results display
+
+### User Experience
+- Users can now modify campaign parameters directly in the forecasting step
+- "Generate Forecast" button triggers immediate forecast updates with new parameters
+- Clean, focused interface with setup controls in the correct workflow location
+- Seamless parameter editing without redundant information display
+
+---
+
 ## Version 3.1.0 - "Enhanced User Experience" (December 2024)
 **Status**: ✅ Production Ready
 
@@ -92,6 +117,6 @@
 
 ---
 
-**Current Stable Version**: 3.1.0  
+**Current Stable Version**: 3.2.0  
 **Recommended for Production**: Yes  
 **Last Updated**: December 2024
