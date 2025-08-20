@@ -510,4 +510,23 @@ export const getAgentStatus = () => {
   return api.get('/agent/status');
 };
 
+export const getAdvertisers = (limit: number = 100) => {
+  if (shouldUseMockData()) {
+    console.log('🎭 Using mock data for demo - getAdvertisers');
+    return Promise.resolve({
+      data: {
+        advertisers: [
+          { advertiser_id: 'nike', brand: 'Nike', domain: 'nike.com' },
+          { advertiser_id: 'adidas', brand: 'Adidas', domain: 'adidas.com' },
+          { advertiser_id: 'coca_cola', brand: 'Coca Cola', domain: 'coca-cola.com' },
+          { advertiser_id: 'pepsi', brand: 'Pepsi', domain: 'pepsi.com' },
+          { advertiser_id: 'mcdonalds', brand: 'McDonalds', domain: 'mcdonalds.com' }
+        ],
+        total_count: 5
+      }
+    });
+  }
+  return api.get(`/vector/advertisers?limit=${limit}`);
+};
+
 export default api; 

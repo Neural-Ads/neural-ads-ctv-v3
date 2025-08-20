@@ -3,7 +3,7 @@ import ChatInterface from './ChatInterface';
 import CampaignSteps from './CampaignSteps';
 import ForecastingTable from './ForecastingTable';
 import CampaignSetup from './CampaignSetup';
-import { sendChatMessage, continueWorkflow, resetAgent, getAgentStatus } from '../api';
+import { sendChatMessage, continueWorkflow, resetAgent, getAgentStatus, getAdvertisers } from '../api';
 
 // Theme Context
 interface ThemeContextType {
@@ -73,6 +73,10 @@ const AgenticWorkspace: React.FC = () => {
     endDate: ''
   });
   
+  // Advertiser dropdown data
+  const [advertisers, setAdvertisers] = useState<Array<{advertiser_id: string, brand: string, domain: string}>>([]);
+  const [loadingAdvertisers, setLoadingAdvertisers] = useState(false);
+  
   // Refs to prevent race conditions
   const processingRef = useRef(false);
   const lastRequestRef = useRef<number>(0);
@@ -105,6 +109,33 @@ const AgenticWorkspace: React.FC = () => {
       });
     }
   }, [campaignData]);
+  
+  // Load advertisers for dropdown
+  const loadAdvertisers = async () => {
+    if (loadingAdvertisers || advertisers.length > 0) return;
+    
+    setLoadingAdvertisers(true);
+    try {
+      const response = await getAdvertisers(500); // Get top 500 advertisers
+      if (response.data?.advertisers) {
+        const formattedAdvertisers = response.data.advertisers.map((adv: any) => ({
+          advertiser_id: adv.advertiser_id,
+          brand: adv.brand || adv.domain?.split('.')[0] || 'Unknown',
+          domain: adv.domain || ''
+        }));
+        setAdvertisers(formattedAdvertisers);
+      }
+    } catch (error) {
+      console.error('Failed to load advertisers:', error);
+    } finally {
+      setLoadingAdvertisers(false);
+    }
+  };
+  
+  // Load advertisers on component mount
+  React.useEffect(() => {
+    loadAdvertisers();
+  }, []);
   
   // Handle updating editable parameters
   const updateEditableParam = (field: keyof typeof editableParams, value: string) => {
@@ -974,17 +1005,50 @@ const AgenticWorkspace: React.FC = () => {
                         ? 'neural-text-label' 
                         : 'text-gray-700'
                     }`}>Advertiser</label>
-                    <input
-                      type="text"
-                      value={editableParams.advertiser}
-                      onChange={(e) => updateEditableParam('advertiser', e.target.value)}
-                      placeholder="Enter advertiser name"
-                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
-                        isGlassmorphism 
-                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
-                      }`}
-                    />
+                    <div className="relative">
+                      <select
+                        value={editableParams.advertiser}
+                        onChange={(e) => updateEditableParam('advertiser', e.target.value)}
+                        className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 appearance-none cursor-pointer ${
+                          isGlassmorphism 
+                            ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
+                            : 'bg-white border border-gray-300 text-gray-900'
+                        }`}
+                        disabled={loadingAdvertisers}
+                      >
+                        <option value="">
+                          {loadingAdvertisers ? 'Loading advertisers...' : 'Select an advertiser'}
+                        </option>
+                        {advertisers.map((adv) => (
+                          <option key={adv.advertiser_id} value={adv.brand}>
+                            {adv.brand} {adv.domain && `(${adv.domain})`}
+                          </option>
+                        ))}
+                        <option value="custom">+ Enter custom advertiser</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg className={`w-4 h-4 ${isGlassmorphism ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                    {editableParams.advertiser === 'custom' && (
+                      <input
+                        type="text"
+                        placeholder="Enter custom advertiser name"
+                        className={`w-full mt-2 p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                          isGlassmorphism 
+                            ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                            : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                        }`}
+                        onChange={(e) => updateEditableParam('advertiser', e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                            updateEditableParam('advertiser', e.currentTarget.value.trim());
+                          }
+                        }}
+                      />
+                    )}
                   </div>
                   <div>
                     <label className={`mb-1 block text-sm font-medium ${
