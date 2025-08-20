@@ -61,8 +61,9 @@ const CampaignForecastTable: React.FC<CampaignForecastTableProps> = ({ data, con
   };
 
   const getConfidenceColor = (conf: number): string => {
-    if (conf >= 0.8) return 'text-green-400';
-    if (conf >= 0.6) return 'text-yellow-400';
+    // Confidence is now passed as percentage (0-100), not decimal (0-1)
+    if (conf >= 80) return 'text-green-400';
+    if (conf >= 60) return 'text-yellow-400';
     return 'text-red-400';
   };
 
@@ -101,7 +102,7 @@ const CampaignForecastTable: React.FC<CampaignForecastTableProps> = ({ data, con
               Budget: {formatCurrency(data.campaign_total_budget)}
             </div>
             <div className={`text-xs ${getConfidenceColor(confidence)}`}>
-              {(confidence * 100).toFixed(0)}% Confidence
+              {confidence.toFixed(0)}% Confidence
             </div>
           </div>
         </div>
@@ -285,7 +286,7 @@ const CampaignForecastTable: React.FC<CampaignForecastTableProps> = ({ data, con
                 `Fill Rate (%),${campaign.fill_rate_percent}`,
                 `eCPM ($),${campaign.effective_cpm_dollars}`,
                 `Inventory Available (M),${campaign.total_inventory_available_mm}`,
-                `Confidence,${(confidence * 100).toFixed(0)}%`,
+                `Confidence,${confidence.toFixed(0)}%`,
                 '',
                 'Campaign Notes:',
                 ...campaign.notes.map(note => `"${note}"`),
