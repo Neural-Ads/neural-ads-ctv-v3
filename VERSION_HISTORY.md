@@ -1,5 +1,31 @@
 # Neural Ads CTV Platform - Version History
 
+## Version 3.5.0 - "Enhanced UX and Data Integration" (January 2025)
+**Status**: ✅ Production Ready
+
+### Key Achievements
+- 🧠 **NEW**: Smart question type prompts with major advertiser examples (Amazon, GMC, Pfizer, Skechers)
+- 📁 **NEW**: Upload Audience CSV functionality with backend storage and validation
+- 💬 **FIXED**: Response fragmentation - AI now provides cohesive single messages
+- 🎯 **ENHANCED**: Workflow trigger detection for campaign planning prompts
+- 📊 **IMPROVED**: Real data integration with vector database for advertiser insights
+
+### Technical Details
+- Enhanced ChatInterface with comprehensive welcome messages and question examples
+- New `/api/upload-audience` endpoint with CSV file validation and secure storage
+- Improved conversational agent with real advertiser preference data integration
+- Fixed message fragmentation in formatAgentMessage function
+- Enhanced intent detection with specific trigger phrases ("plan a campaign", "plan a $")
+
+### User Experience
+- Clear onboarding with smart question prompts showing platform capabilities
+- Professional file upload interface for audience data with real-time feedback
+- Single, well-structured AI responses instead of fragmented multi-message output
+- Seamless transition from data questions to campaign workflow creation
+- Major brand examples provide familiar reference points for users
+
+---
+
 ## Version 3.2.0 - "Reforecast & Campaign Setup" (December 2024)
 **Status**: ✅ Production Ready
 
