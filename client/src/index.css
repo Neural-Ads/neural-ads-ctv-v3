@@ -1091,6 +1091,12 @@ body {
   @apply text-lg font-semibold text-gray-900;
 }
 
+/* Header-specific classes that stay white */
+.neural-header-title {
+  @apply text-2xl font-bold text-white tracking-tight;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 /* Enhanced Text Readability Classes - Dark Grey for Better Readability */
 .neural-text-primary {
   @apply text-gray-800 font-medium;

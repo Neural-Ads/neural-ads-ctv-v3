@@ -1741,12 +1741,12 @@ const AgenticWorkspace: React.FC = () => {
                     <div>
                       <h1 className={`text-2xl font-bold tracking-tight ${
                         isGlassmorphism 
-                          ? 'neural-heading-1' 
+                          ? 'neural-header-title' 
                           : 'text-gray-900'
                       }`}>Neural Ads</h1>
                       <p className={`${
                         isGlassmorphism 
-                          ? 'neural-text-secondary' 
+                          ? 'text-gray-200' 
                           : 'text-gray-600'
                       }`}>AI-Powered CTV Campaign Intelligence</p>
                     </div>
