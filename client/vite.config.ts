@@ -36,9 +36,15 @@ export default defineConfig(({ command, mode }) => {
       port: 8081,
       host: '198.179.69.83',
       proxy: env.VITE_API_URL ? {
-        '/api': env.VITE_API_URL
+        '/api': env.VITE_API_URL,
+        '/chat': env.VITE_API_URL,
+        '/agent': env.VITE_API_URL,
+        '/vector': env.VITE_API_URL
       } : {
-        '/api': 'http://198.179.69.83:8000'
+        '/api': 'http://198.179.69.83:8000',
+        '/chat': 'http://198.179.69.83:8000',
+        '/agent': 'http://198.179.69.83:8000',
+        '/vector': 'http://198.179.69.83:8000'
       }
     },
     plugins: [react()],

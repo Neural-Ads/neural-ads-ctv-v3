@@ -139,9 +139,96 @@ const AgenticWorkspace: React.FC = () => {
     loadAdvertisers();
   }, []);
   
+  // Handle transition to forecasting input step (frontend-only)
+  const handleGoToForecastingInput = () => {
+    // Create forecasting_input step data with line item context
+    const lineItemData = campaignData.find(data => data.step === 'campaign_generation');
+    
+    if (lineItemData) {
+      // Add the forecasting_input step to campaign data
+      setCampaignData(prev => {
+        const existingIndex = prev.findIndex(item => item.step === 'forecasting_input');
+        const newStepData = {
+          step: 'forecasting_input',
+          data: {
+            line_items: lineItemData.data.line_items,
+            ready_for_forecast: true,
+            campaign_budget: lineItemData.data.line_items?.reduce((sum: number, item: any) => sum + (item.budget || 0), 0) || 250000
+          },
+          confidence: 100,
+          timestamp: new Date().toISOString()
+        };
+        
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = newStepData;
+          return updated;
+        } else {
+          return [...prev, newStepData];
+        }
+      });
+      
+      // Update agent state to forecasting_input (frontend-only step)
+      setAgentState(prev => ({
+        ...prev,
+        current_step: 'forecasting_input',
+        progress: 85, // Between campaign_generation (80%) and forecasting (100%)
+        last_reasoning: 'Ready to configure forecast parameters',
+        next_action: 'Set budget, dates, and frequency then generate forecast',
+        avatar_state: 'idle'
+      }));
+
+      // Pre-populate editable params from line item data
+      if (lineItemData.data.line_items?.length > 0) {
+        const totalBudget = lineItemData.data.line_items.reduce((sum: number, item: any) => sum + (item.budget || 0), 0);
+        setEditableParams(prev => ({
+          ...prev,
+          budget: totalBudget.toString(),
+          // Keep existing dates and frequency, or set defaults
+          startDate: prev.startDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 week from now
+          endDate: prev.endDate || new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 5 weeks from now
+          targetFrequency: prev.targetFrequency || '2.5',
+          timeline: prev.timeline || '4 weeks'
+        }));
+      }
+    }
+  };
+
+  // Calculate duration in weeks between two dates
+  const calculateDurationWeeks = (startDate: string, endDate: string): string => {
+    if (!startDate || !endDate) return '4 weeks';
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const weeks = Math.ceil(diffDays / 7);
+    
+    // Round to common durations
+    if (weeks <= 2) return '2 weeks';
+    if (weeks <= 4) return '4 weeks';
+    if (weeks <= 6) return '6 weeks';
+    if (weeks <= 8) return '8 weeks';
+    return '12 weeks';
+  };
+
   // Handle updating editable parameters
   const updateEditableParam = (field: keyof typeof editableParams, value: string) => {
-    setEditableParams(prev => ({ ...prev, [field]: value }));
+    setEditableParams(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Auto-sync campaign duration when dates change
+      if (field === 'startDate' || field === 'endDate') {
+        const startDate = field === 'startDate' ? value : prev.startDate;
+        const endDate = field === 'endDate' ? value : prev.endDate;
+        
+        if (startDate && endDate) {
+          updated.timeline = calculateDurationWeeks(startDate, endDate);
+        }
+      }
+      
+      return updated;
+    });
     
     // Update the campaign data as well
     setCampaignData(prev => {
@@ -645,9 +732,80 @@ const AgenticWorkspace: React.FC = () => {
     setError(null);
     
     try {
-      console.log('🔄 Triggering reforecast with updated campaign parameters');
+      console.log('🔄 Triggering forecast generation with updated campaign parameters');
       
-      // Create a message that will trigger reforecasting
+      // If we're in forecasting_input step, trigger the backend forecasting workflow
+      if (agentState.current_step === 'forecasting_input') {
+        // Create a message that will trigger forecasting workflow continuation
+        const forecastMessage = `Generate forecast with budget $${editableParams.budget}, timeline ${editableParams.startDate} to ${editableParams.endDate}, frequency ${editableParams.targetFrequency}x`;
+        
+        // Add user message to chat
+        setChatMessages(prev => [...prev, {
+          type: 'user',
+          content: "Generate forecast with my configured parameters",
+          timestamp: new Date().toISOString()
+        }]);
+        
+        // Continue the workflow to trigger forecasting
+        const response = await fetch('/chat/workflow-continue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: forecastMessage })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Forecasting workflow triggered:', result);
+        
+        // Add agent response
+        setChatMessages(prev => [...prev, {
+          type: 'agent',
+          content: result.message || 'Generating forecast with your parameters...',
+          timestamp: new Date().toISOString()
+        }]);
+        
+        // Update state to forecasting step if successful
+        if (result.workflow_result) {
+          const workflowResult = result.workflow_result;
+          
+          // Update campaign data with forecast
+          setCampaignData(prev => {
+            const newData = {
+              step: workflowResult.step,
+              data: workflowResult.data || {},
+              confidence: workflowResult.confidence ? (workflowResult.confidence * 100) : 95,
+              timestamp: new Date().toISOString()
+            };
+            
+            // Replace existing forecasting data
+            const existingIndex = prev.findIndex(item => item.step === workflowResult.step);
+            if (existingIndex >= 0) {
+              const updated = [...prev];
+              updated[existingIndex] = newData;
+              return updated;
+            } else {
+              return [...prev, newData];
+            }
+          });
+          
+          // Update agent state to forecasting
+          setAgentState(prev => ({
+            ...prev,
+            current_step: 'forecasting',
+            progress: 100,
+            last_reasoning: workflowResult.action || 'Forecast generated successfully',
+            next_action: 'Review forecast results',
+            avatar_state: 'complete'
+          }));
+        }
+        
+        return; // Exit early for forecasting_input flow
+      }
+      
+      // Regular reforecast for existing forecasting step
       const reforecastMessage = "Please regenerate the forecast with the updated campaign parameters.";
       
       // Add user message to chat
@@ -698,13 +856,13 @@ const AgenticWorkspace: React.FC = () => {
           }
         });
         
-        // Update agent state
+        // Update agent state - keep in forecasting step for iterative adjustments
         setAgentState(prev => ({
           ...prev,
-          current_step: workflowResult.current_step,
-          progress: workflowResult.progress,
-          last_reasoning: workflowResult.action,
-          next_action: 'Forecast updated successfully',
+          current_step: 'forecasting', // Force stay in forecasting step
+          progress: 100,
+          last_reasoning: workflowResult.action || 'Forecast regenerated successfully',
+          next_action: 'Adjust parameters or continue with forecast',
           avatar_state: 'complete'
         }));
         
@@ -734,7 +892,8 @@ const AgenticWorkspace: React.FC = () => {
     { id: 'advertiser_preferences', title: 'Historical Data', icon: '📈', color: 'purple' },
     { id: 'audience_generation', title: 'Audience Analysis', icon: '🎯', color: 'orange' },
     { id: 'campaign_generation', title: 'Media Plan', icon: '⚡', color: 'orange' },
-    { id: 'forecasting', title: 'Campaign Setup', icon: '⚙️', color: 'indigo' }
+    { id: 'forecasting_input', title: 'Forecasting Input', icon: '📝', color: 'indigo' },
+    { id: 'forecasting', title: 'Campaign Forecast', icon: '🔮', color: 'green' }
   ];
 
   const getCurrentStepData = () => {
@@ -1734,18 +1893,221 @@ const AgenticWorkspace: React.FC = () => {
                   </button>
                   
                   <button
-                    onClick={handleContinueWorkflow}
+                    onClick={handleGoToForecastingInput}
                     disabled={isProcessing}
                     className={`px-6 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isGlassmorphism 
                         ? 'neural-btn neural-btn-primary' 
                         : 'bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white border border-blue-600'
                     } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    title="Continue to Forecasting"
+                    title="Continue to Forecasting Input"
                   >
                     <div className="flex items-center space-x-2">
-                      <span>📊</span>
-                      <span>{isProcessing ? 'Processing...' : 'Generate Forecast'}</span>
+                      <span>📝</span>
+                      <span>{isProcessing ? 'Processing...' : 'Setup Forecast'}</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'forecasting_input':
+        const lineItemData = campaignData.find(data => data.step === 'campaign_generation');
+        
+        return (
+          <div>
+            <h3 className="neural-heading-3 mb-6">Forecasting Input</h3>
+            <p className={`mb-6 ${
+              isGlassmorphism 
+                ? 'neural-text-secondary' 
+                : 'text-gray-600'
+            }`}>
+              Configure your CTV campaign parameters and generate forecasting analysis.
+            </p>
+            
+            {/* Show Line Items Summary */}
+            {lineItemData?.data?.line_items && (
+              <div className="mb-8">
+                <h4 className={`text-lg font-semibold mb-4 ${
+                  isGlassmorphism 
+                    ? 'neural-text-emphasis' 
+                    : 'text-gray-900'
+                }`}>📋 Line Items Summary</h4>
+                <div className={`rounded-lg p-4 mb-6 ${
+                  isGlassmorphism 
+                    ? 'neural-glass border border-white border-opacity-20' 
+                    : 'bg-gray-50 border border-gray-200'
+                }`}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className={`text-sm ${
+                        isGlassmorphism 
+                          ? 'neural-text-secondary' 
+                          : 'text-gray-600'
+                      }`}>
+                        {lineItemData.data.line_items.length} line items • Total Budget: ${lineItemData.data.line_items.reduce((sum: number, item: any) => sum + (item.budget || 0), 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className={`text-xs px-2 py-1 rounded ${
+                      isGlassmorphism 
+                        ? 'bg-green-500/20 text-green-300' 
+                        : 'bg-green-100 text-green-600'
+                    }`}>
+                      Ready for Forecasting
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Simplified Forecasting Parameters */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <label className={`mb-1 block text-sm font-medium ${
+                    isGlassmorphism 
+                      ? 'neural-text-label' 
+                      : 'text-gray-700'
+                  }`}>Total Budget ($)</label>
+                  <input
+                    type="number"
+                    value={editableParams.budget}
+                    onChange={(e) => updateEditableParam('budget', e.target.value)}
+                    className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                      isGlassmorphism 
+                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                    placeholder="250000"
+                  />
+                </div>
+                
+                <div>
+                  <label className={`mb-1 block text-sm font-medium ${
+                    isGlassmorphism 
+                      ? 'neural-text-label' 
+                      : 'text-gray-700'
+                  }`}>Start Date</label>
+                  <input
+                    type="date"
+                    value={editableParams.startDate}
+                    onChange={(e) => updateEditableParam('startDate', e.target.value)}
+                    className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                      isGlassmorphism 
+                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                
+                <div>
+                  <label className={`mb-1 block text-sm font-medium ${
+                    isGlassmorphism 
+                      ? 'neural-text-label' 
+                      : 'text-gray-700'
+                  }`}>End Date</label>
+                  <input
+                    type="date"
+                    value={editableParams.endDate}
+                    onChange={(e) => updateEditableParam('endDate', e.target.value)}
+                    className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                      isGlassmorphism 
+                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className={`mb-1 block text-sm font-medium ${
+                    isGlassmorphism 
+                      ? 'neural-text-label' 
+                      : 'text-gray-700'
+                  }`}>Target Frequency</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editableParams.targetFrequency}
+                    onChange={(e) => updateEditableParam('targetFrequency', e.target.value)}
+                    className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                      isGlassmorphism 
+                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                    placeholder="2.5"
+                  />
+                </div>
+                
+                <div>
+                  <label className={`mb-1 block text-sm font-medium ${
+                    isGlassmorphism 
+                      ? 'neural-text-label' 
+                      : 'text-gray-700'
+                  }`}>Campaign Duration</label>
+                  <div className="relative">
+                    <select
+                      value={editableParams.timeline || '4 weeks'}
+                      onChange={(e) => updateEditableParam('timeline', e.target.value)}
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 appearance-none cursor-pointer ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900'
+                      }`}
+                    >
+                      <option value="2 weeks">2 weeks</option>
+                      <option value="4 weeks">4 weeks</option>
+                      <option value="6 weeks">6 weeks</option>
+                      <option value="8 weeks">8 weeks</option>
+                      <option value="12 weeks">12 weeks</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                      <svg className={`w-4 h-4 ${isGlassmorphism ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className={`text-xs mt-1 ${
+                    isGlassmorphism ? 'neural-text-muted' : 'text-gray-500'
+                  }`}>
+                    Auto-calculated from date range
+                  </p>
+                </div>
+              </div>
+
+              {/* Generate Forecast Button */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className={`text-lg font-semibold ${
+                      isGlassmorphism 
+                        ? 'neural-text-emphasis' 
+                        : 'text-gray-900'
+                    }`}>Ready to Generate Forecast</h4>
+                    <p className={`text-sm ${
+                      isGlassmorphism 
+                        ? 'neural-text-secondary' 
+                        : 'text-gray-600'
+                    }`}>
+                      Click below to generate detailed campaign forecasting analysis
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleReforecast}
+                    disabled={isProcessing}
+                    className={`px-8 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      isGlassmorphism 
+                        ? 'neural-btn neural-btn-primary' 
+                        : 'bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white border border-green-600'
+                    } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title="Generate Campaign Forecast"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>🔮</span>
+                      <span>{isProcessing ? 'Generating...' : 'Generate Forecast'}</span>
                     </div>
                   </button>
                 </div>
@@ -1930,122 +2292,98 @@ const AgenticWorkspace: React.FC = () => {
               </div>
             )}
 
-            {/* Campaign Setup Form */}
-            <CampaignSetup 
-              onCampaignSubmit={(campaignData) => {
-                console.log('Campaign setup submitted:', campaignData);
-                // You can handle the campaign setup data here
-                // For now, we'll just log it
-              }}
-              isProcessing={isProcessing}
-            />
-          </div>
-        );
-
-      case 'forecasting':
-        return (
-          <div>
-            <h3 className="neural-heading-3 mb-6">Campaign Setup</h3>
-            <p className={`mb-6 ${
+            {/* Forecasting Input Panel for Iterative Adjustments */}
+            <div className={`rounded-xl p-6 mb-8 ${
               isGlassmorphism 
-                ? 'neural-text-secondary' 
-                : 'text-gray-600'
+                ? 'neural-glass' 
+                : 'bg-white border border-gray-200 shadow-sm'
             }`}>
-              Configure your CTV campaign parameters and generate forecasting analysis.
-            </p>
-            
-            {/* Campaign Setup Form for Forecasting Step */}
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className={`mb-1 block text-sm font-medium ${
-                    isGlassmorphism 
-                      ? 'neural-text-label' 
-                      : 'text-gray-700'
-                  }`}>Advertiser</label>
-                  <div className="relative">
-                    <select
-                      value={editableParams.advertiser}
-                      onChange={(e) => updateEditableParam('advertiser', e.target.value)}
-                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 appearance-none cursor-pointer ${
-                        isGlassmorphism 
-                          ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
-                          : 'bg-white border border-gray-300 text-gray-900'
-                      }`}
-                      disabled={loadingAdvertisers}
-                    >
-                      <option value="">
-                        {loadingAdvertisers ? 'Loading advertisers...' : 'Select an advertiser'}
-                      </option>
-                      {advertisers.map((adv) => (
-                        <option key={adv.advertiser_id} value={adv.brand}>
-                          {adv.brand} {adv.domain && `(${adv.domain})`}
-                        </option>
-                      ))}
-                      <option value="custom">+ Enter custom advertiser</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                      <svg className={`w-4 h-4 ${isGlassmorphism ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-                  {editableParams.advertiser === 'custom' && (
-                    <input
-                      type="text"
-                      placeholder="Enter custom advertiser name"
-                      className={`w-full mt-2 p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
-                        isGlassmorphism 
-                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
-                      }`}
-                      onChange={(e) => updateEditableParam('advertiser', e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                          updateEditableParam('advertiser', e.currentTarget.value.trim());
+              <div className="mb-6">
+                <h3 className={`text-xl font-bold mb-2 ${
+                  isGlassmorphism 
+                    ? 'neural-text-primary' 
+                    : 'text-gray-900'
+                }`}>📝 Forecasting Parameters</h3>
+                <p className={`text-sm ${
+                  isGlassmorphism 
+                    ? 'neural-text-muted' 
+                    : 'text-gray-600'
+                }`}>
+                  Adjust parameters and regenerate forecasts to optimize your campaign performance
+                </p>
+              </div>
+
+              {/* Line Items Summary */}
+              <div className={`rounded-lg p-4 mb-6 ${
+                isGlassmorphism 
+                  ? 'neural-glass-info' 
+                  : 'bg-blue-50 border border-blue-200'
+              }`}>
+                <h4 className={`font-semibold mb-2 ${
+                  isGlassmorphism 
+                    ? 'neural-text-emphasis' 
+                    : 'text-gray-900'
+                }`}>📊 Line Items Summary</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className={`text-sm ${
+                      isGlassmorphism ? 'neural-text-muted' : 'text-gray-600'
+                    }`}>Line Items: </span>
+                    <span className={`font-medium ${
+                      isGlassmorphism ? 'neural-text-secondary' : 'text-gray-900'
+                    }`}>
+                      {(() => {
+                        const campaignGenStep = campaignData.find(step => step.step === 'campaign_generation');
+                        if (campaignGenStep?.data?.line_items) {
+                          return campaignGenStep.data.line_items.length;
                         }
-                      }}
-                    />
-                  )}
-                </div>
-                <div>
-                  <label className={`mb-1 block text-sm font-medium ${
-                    isGlassmorphism 
-                      ? 'neural-text-label' 
-                      : 'text-gray-700'
-                  }`}>Campaign Budget</label>
-                  <input
-                    type="number"
-                    value={editableParams.budget}
-                    onChange={(e) => updateEditableParam('budget', e.target.value)}
-                    placeholder="Enter budget amount"
-                    className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
-                      isGlassmorphism 
-                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
-                    }`}
-                  />
+                        return 'N/A';
+                      })()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className={`text-sm ${
+                      isGlassmorphism ? 'neural-text-muted' : 'text-gray-600'
+                    }`}>Total Budget: </span>
+                    <span className={`font-medium ${
+                      isGlassmorphism ? 'neural-text-secondary' : 'text-gray-900'
+                    }`}>
+                      {(() => {
+                        const campaignGenStep = campaignData.find(step => step.step === 'campaign_generation');
+                        if (campaignGenStep?.data?.line_items) {
+                          const totalBudget = campaignGenStep.data.line_items.reduce((sum: number, item: any) => 
+                            sum + (parseFloat(item.budget) || 0), 0
+                          );
+                          return `$${totalBudget.toLocaleString()}`;
+                        }
+                        return '$0';
+                      })()}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-6">
+
+              {/* Forecasting Parameters Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className={`mb-1 block text-sm font-medium ${
                     isGlassmorphism 
                       ? 'neural-text-label' 
                       : 'text-gray-700'
-                  }`}>Campaign Objective</label>
+                  }`}>Total Budget ($)</label>
                   <input
-                    type="text"
-                    value={editableParams.objective}
-                    onChange={(e) => updateEditableParam('objective', e.target.value)}
-                    placeholder="Enter campaign objective"
+                    type="number"
+                    value={editableParams.budget || ''}
+                    onChange={(e) => updateEditableParam('budget', e.target.value)}
                     className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
                       isGlassmorphism 
-                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                        ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
+                        : 'bg-white border border-gray-300 text-gray-900'
                     }`}
+                    placeholder="50000"
                   />
                 </div>
+
                 <div>
                   <label className={`mb-1 block text-sm font-medium ${
                     isGlassmorphism 
@@ -2055,25 +2393,17 @@ const AgenticWorkspace: React.FC = () => {
                   <input
                     type="number"
                     step="0.1"
-                    min="1.0"
-                    max="10.0"
-                    value={editableParams.targetFrequency}
-                    onChange={(e) => updateEditableParam('targetFrequency', e.target.value)}
-                    placeholder="2.5"
+                    value={editableParams.frequency || ''}
+                    onChange={(e) => updateEditableParam('frequency', e.target.value)}
                     className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
                       isGlassmorphism 
-                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                        ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
+                        : 'bg-white border border-gray-300 text-gray-900'
                     }`}
+                    placeholder="2.5"
                   />
-                  <p className={`text-xs mt-1 ${
-                    isGlassmorphism ? 'neural-text-muted' : 'text-gray-500'
-                  }`}>
-                    Average times each viewer sees the ad
-                  </p>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
+
                 <div>
                   <label className={`mb-1 block text-sm font-medium ${
                     isGlassmorphism 
@@ -2082,7 +2412,7 @@ const AgenticWorkspace: React.FC = () => {
                   }`}>Start Date</label>
                   <input
                     type="date"
-                    value={editableParams.startDate}
+                    value={editableParams.startDate || ''}
                     onChange={(e) => updateEditableParam('startDate', e.target.value)}
                     className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
                       isGlassmorphism 
@@ -2091,6 +2421,7 @@ const AgenticWorkspace: React.FC = () => {
                     }`}
                   />
                 </div>
+
                 <div>
                   <label className={`mb-1 block text-sm font-medium ${
                     isGlassmorphism 
@@ -2099,9 +2430,8 @@ const AgenticWorkspace: React.FC = () => {
                   }`}>End Date</label>
                   <input
                     type="date"
-                    value={editableParams.endDate}
+                    value={editableParams.endDate || ''}
                     onChange={(e) => updateEditableParam('endDate', e.target.value)}
-                    min={editableParams.startDate}
                     className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
                       isGlassmorphism 
                         ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
@@ -2109,27 +2439,170 @@ const AgenticWorkspace: React.FC = () => {
                     }`}
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <label className={`mb-1 block text-sm font-medium ${
+                    isGlassmorphism 
+                      ? 'neural-text-label' 
+                      : 'text-gray-700'
+                  }`}>Campaign Duration</label>
+                  <div className="relative">
+                    <select
+                      value={editableParams.timeline || '4 weeks'}
+                      onChange={(e) => updateEditableParam('timeline', e.target.value)}
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 appearance-none cursor-pointer ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900'
+                      }`}
+                    >
+                      <option value="2 weeks">2 weeks</option>
+                      <option value="4 weeks">4 weeks</option>
+                      <option value="6 weeks">6 weeks</option>
+                      <option value="8 weeks">8 weeks</option>
+                      <option value="12 weeks">12 weeks</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                      <svg className={`w-4 h-4 ${isGlassmorphism ? 'text-gray-300' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className={`text-xs mt-1 ${
+                    isGlassmorphism ? 'neural-text-muted' : 'text-gray-500'
+                  }`}>
+                    Auto-calculated from date range
+                  </p>
+                </div>
               </div>
-              
-              {/* Reforecast Button */}
-              <div className="mt-6 flex justify-center">
+
+              {/* Action Buttons */}
+              <div className="pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm">
+                    <span className={`${
+                      isGlassmorphism ? 'neural-text-muted' : 'text-gray-600'
+                    }`}>
+                      Adjust parameters and regenerate forecast, or finish when satisfied
+                    </span>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={async () => {
+                        if (agentState.current_step === 'forecasting') {
+                          await handleReforecast();
+                        }
+                      }}
+                      disabled={isProcessing}
+                      className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
+                        isProcessing 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : isGlassmorphism
+                            ? 'neural-btn neural-btn-primary hover:scale-105' 
+                            : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
+                      }`}
+                    >
+                      {isProcessing ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Regenerating...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <span>🔮</span>
+                          <span>Regenerate Forecast</span>
+                        </div>
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        // Mark workflow as complete
+                        setAgentState(prev => ({
+                          ...prev,
+                          current_step: 'complete',
+                          progress: 100,
+                          last_reasoning: 'Campaign setup completed successfully',
+                          next_action: 'Campaign ready for launch',
+                          avatar_state: 'complete'
+                        }));
+                      }}
+                      disabled={isProcessing}
+                      className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                        isProcessing 
+                          ? 'bg-gray-400 cursor-not-allowed text-white' 
+                          : isGlassmorphism
+                            ? 'neural-btn neural-btn-success hover:scale-105' 
+                            : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span>✅</span>
+                        <span>Finish Setup</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+
+
+      case 'complete':
+        return (
+          <div className="text-center py-12">
+            <div className={`rounded-xl p-8 ${
+              isGlassmorphism 
+                ? 'neural-glass' 
+                : 'bg-white border border-gray-200 shadow-sm'
+            }`}>
+              <div className="text-6xl mb-4">🎉</div>
+              <h3 className={`text-2xl font-bold mb-4 ${
+                isGlassmorphism 
+                  ? 'neural-text-primary' 
+                  : 'text-gray-900'
+              }`}>Campaign Setup Complete!</h3>
+              <p className={`mb-6 ${
+                isGlassmorphism 
+                  ? 'neural-text-secondary' 
+                  : 'text-gray-600'
+              }`}>
+                Your campaign has been successfully configured with optimized forecasting parameters. 
+                You can now proceed with launching your campaign or make additional adjustments.
+              </p>
+              <div className="flex justify-center space-x-4">
                 <button
-                  onClick={handleReforecast}
-                  disabled={isProcessing}
-                  className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 ${
-                    isProcessing
-                      ? isGlassmorphism 
-                        ? 'bg-gray-500 bg-opacity-20 text-gray-400 border border-gray-400 border-opacity-30 cursor-not-allowed' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : isGlassmorphism 
-                        ? 'bg-blue-500 bg-opacity-20 text-blue-300 border border-blue-400 border-opacity-30 hover:bg-opacity-30 hover:text-blue-200' 
-                        : 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm'
+                  onClick={() => window.location.reload()}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                    isGlassmorphism
+                      ? 'neural-btn neural-btn-secondary' 
+                      : 'bg-gray-600 hover:bg-gray-700 text-white shadow-lg hover:shadow-xl'
                   }`}
-                  title="Generate forecast with current campaign parameters"
                 >
                   <div className="flex items-center space-x-2">
-                    <span>🔮</span>
-                    <span>{isProcessing ? 'Generating Forecast...' : 'Generate Forecast'}</span>
+                    <span>🔄</span>
+                    <span>Start New Campaign</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    setAgentState(prev => ({
+                      ...prev,
+                      current_step: 'forecasting',
+                      next_action: 'Review forecast or make adjustments'
+                    }));
+                  }}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                    isGlassmorphism
+                      ? 'neural-btn neural-btn-primary' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <span>📊</span>
+                    <span>Review Forecast</span>
                   </div>
                 </button>
               </div>
@@ -2415,7 +2888,7 @@ const AgenticWorkspace: React.FC = () => {
                   {renderStepContent()}
                   
                   {/* Continue to Next Step Button */}
-                  {(campaignData.length > 0 && agentState.current_step !== 'forecasting' && !isProcessing) && (
+                  {(campaignData.length > 0 && agentState.current_step !== 'forecasting' && agentState.current_step !== 'forecasting_input' && agentState.current_step !== 'campaign_generation' && !isProcessing) && (
                     <div className="mt-8 pt-6 border-t border-gray-200">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
