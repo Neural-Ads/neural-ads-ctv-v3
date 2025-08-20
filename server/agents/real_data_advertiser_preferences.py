@@ -423,8 +423,8 @@ class RealDataAdvertiserPreferencesAgent:
             'geographic_reach': len([col for col in advertiser_data.index if col.startswith('zip_') and advertiser_data[col] > 0])
         }
         
-        # Determine content and channel preferences based on network performance
-        content_preferences = self._infer_content_preferences(network_performance)
+        # Determine content and channel preferences based on network performance and industry
+        content_preferences = self._infer_content_preferences(network_performance, advertiser_name, advertiser_data)
         channel_preferences = self._infer_channel_preferences(network_performance, performance_metrics)
         
         # Determine targeting preferences
@@ -444,26 +444,43 @@ class RealDataAdvertiserPreferencesAgent:
             data_source="real_data"
         )
     
-    def _infer_content_preferences(self, network_performance: Dict[str, float]) -> List[str]:
-        """Infer content preferences based on network performance"""
+    def _infer_content_preferences(self, network_performance: Dict[str, float], advertiser_name: str, advertiser_data: pd.Series) -> List[str]:
+        """Infer content preferences based on network performance and industry knowledge"""
         content_preferences = []
+        domain = advertiser_data['adomain'].lower()
         
-        # Map networks to content types
-        network_content_mapping = {
-            'accuweather': ['News', 'Weather Content'],
-            'aetv': ['Reality TV', 'Drama', 'Documentary'],
-            'alliant': ['Targeted Programming'],
-            'roku': ['Streaming Content', 'Premium CTV'],
-            'hulu': ['Premium Streaming', 'Original Content'],
-            'samsung': ['Smart TV Content'],
-            'lg': ['Connected TV'],
-            'vizio': ['CTV Platform Content']
-        }
-        
-        for network, percentage in network_performance.items():
-            network_lower = network.lower()
-            if network_lower in network_content_mapping and percentage > 5.0:
-                content_preferences.extend(network_content_mapping[network_lower])
+        # Industry-specific content preferences
+        if any(x in domain for x in ['nike', 'adidas', 'reebok', 'puma']):
+            content_preferences.extend(["Sports Programming", "Fitness Content", "Outdoor Adventures", "Youth Entertainment"])
+        elif any(x in domain for x in ['mcdonalds', 'kfc', 'subway', 'pizzahut']):
+            content_preferences.extend(["Family Entertainment", "Comedy Shows", "Reality TV", "Local News"])
+        elif any(x in domain for x in ['pepsi', 'coke', 'cocacola', 'sprite']):
+            content_preferences.extend(["Music Programming", "Youth Entertainment", "Sports Events", "Social Content"])
+        elif any(x in domain for x in ['ford', 'toyota', 'honda', 'chevrolet', 'bmw']):
+            content_preferences.extend(["Sports Programming", "News", "Adventure Shows", "Lifestyle Content"])
+        elif any(x in domain for x in ['apple', 'samsung', 'google', 'microsoft']):
+            content_preferences.extend(["Tech Reviews", "Innovation Shows", "News", "Premium Content"])
+        elif any(x in domain for x in ['walmart', 'target', 'amazon', 'costco']):
+            content_preferences.extend(["Family Entertainment", "Lifestyle Shows", "Reality TV", "Local Programming"])
+        else:
+            # Network-based content mapping for other advertisers
+            network_content_mapping = {
+                'accuweather': ['News', 'Weather Content'],
+                'aetv': ['Reality TV', 'Drama', 'Documentary'],
+                'alliant': ['Targeted Programming'],
+                'roku': ['Streaming Content', 'Premium CTV'],
+                'hulu': ['Premium Streaming', 'Original Content'],
+                'samsung': ['Smart TV Content'],
+                'lg': ['Connected TV'],
+                'vizio': ['CTV Platform Content'],
+                'viacom': ['Entertainment', 'Reality TV', 'Comedy'],
+                'discovery': ['Documentary', 'Reality TV', 'Educational']
+            }
+            
+            for network, percentage in network_performance.items():
+                network_lower = network.lower()
+                if network_lower in network_content_mapping and percentage > 5.0:
+                    content_preferences.extend(network_content_mapping[network_lower])
         
         # Remove duplicates and limit
         content_preferences = list(dict.fromkeys(content_preferences))[:4]
@@ -498,27 +515,52 @@ class RealDataAdvertiserPreferencesAgent:
         return channel_preferences[:3]
     
     def _infer_targeting_preferences(self, advertiser_data: pd.Series, cpm_insights: Dict[str, float]) -> List[str]:
-        """Infer targeting preferences based on data patterns"""
+        """Infer targeting preferences based on data patterns and industry knowledge"""
         targeting_preferences = []
-        
-        # Based on CPM, infer audience targeting
+        domain = advertiser_data['adomain'].lower()
         avg_cpm = cpm_insights.get('avg', 0) if 'avg' in cpm_insights else 0
+        total_packets = advertiser_data['total_packets']
         
-        if avg_cpm > 15:
-            targeting_preferences.extend(["Premium Audiences", "High-value Demographics", "Adults 25-54"])
-        elif avg_cpm > 10:
-            targeting_preferences.extend(["Adults 25-54", "Household Income $50K+", "Urban/Suburban"])
+        # Industry-specific targeting based on domain
+        if any(x in domain for x in ['nike', 'adidas', 'reebok', 'puma']):
+            targeting_preferences.extend(["Sports Enthusiasts", "Active Lifestyle", "Ages 18-45", "Urban Demographics"])
+        elif any(x in domain for x in ['mcdonalds', 'kfc', 'subway', 'pizzahut']):
+            targeting_preferences.extend(["Families with Children", "Convenience Seekers", "Ages 25-54", "All Income Levels"])
+        elif any(x in domain for x in ['pepsi', 'coke', 'cocacola', 'sprite']):
+            targeting_preferences.extend(["Young Adults", "Social Occasions", "Ages 18-34", "Entertainment Viewers"])
+        elif any(x in domain for x in ['ford', 'toyota', 'honda', 'chevrolet', 'bmw']):
+            targeting_preferences.extend(["Auto Intenders", "Household Income $50K+", "Ages 25-65", "Suburban/Rural"])
+        elif any(x in domain for x in ['apple', 'samsung', 'google', 'microsoft']):
+            targeting_preferences.extend(["Tech Early Adopters", "High Income", "Ages 25-54", "Urban/Suburban"])
+        elif any(x in domain for x in ['walmart', 'target', 'amazon', 'costco']):
+            targeting_preferences.extend(["Value Shoppers", "Families", "Ages 25-65", "All Demographics"])
         else:
-            targeting_preferences.extend(["Broad Audiences", "Cost-efficient Targeting", "Adults 18-54"])
+            # Fallback based on CPM and activity patterns
+            if avg_cpm > 15:
+                targeting_preferences.extend(["Premium Audiences", "High-value Demographics", "Ages 25-54"])
+            elif avg_cpm > 10:
+                targeting_preferences.extend(["Middle Income", "Suburban Demographics", "Ages 25-54"])
+            else:
+                targeting_preferences.extend(["Broad Reach", "Cost-efficient Targeting", "Ages 18-54"])
+        
+        # Add scale-based targeting
+        if total_packets > 100000:
+            targeting_preferences.append("Mass Market Reach")
+        elif total_packets > 10000:
+            targeting_preferences.append("Targeted Campaigns")
+        else:
+            targeting_preferences.append("Niche Targeting")
         
         # Geographic targeting based on zip diversity
         zip_cols = [col for col in advertiser_data.index if col.startswith('zip_') and advertiser_data[col] > 0]
         if len(zip_cols) > 100:
             targeting_preferences.append("Nationwide Reach")
+        elif len(zip_cols) > 20:
+            targeting_preferences.append("Regional Focus")
         else:
-            targeting_preferences.append("Geographic Focus")
+            targeting_preferences.append("Local Markets")
         
-        return targeting_preferences[:3]
+        return targeting_preferences[:5]
     
     async def generate_reasoning(self, preferences: RealAdvertiserPreferences) -> str:
         """Generate human-readable reasoning for the advertiser analysis"""
