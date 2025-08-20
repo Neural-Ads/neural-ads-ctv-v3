@@ -88,6 +88,10 @@ temp/
 # Environment specific
 .env.production
 .env.staging
+.env.development
+
+# Deployment scripts (may contain secrets)
+server/scripts/deploy_*.sh
 
 # Coverage reports
 coverage/
