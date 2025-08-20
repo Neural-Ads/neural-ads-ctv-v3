@@ -611,6 +611,123 @@ const AgenticWorkspace: React.FC = () => {
     event.target.value = '';
   };
 
+  // Processing Indicator Component
+  const renderProcessingIndicator = () => {
+    if (!isProcessing && !processingRef.current) return null;
+    
+    const getProcessingMessage = () => {
+      if (agentState.last_reasoning) {
+        return agentState.last_reasoning;
+      }
+      
+      // Default messages based on current step
+      const stepMessages = {
+        'campaign_data': 'Analyzing campaign requirements and extracting key parameters...',
+        'advertiser_preferences': 'Analyzing historical viewing patterns and advertiser preferences...',
+        'audience_generation': 'Generating ACR audience segments and targeting criteria...',
+        'campaign_generation': 'Building executable line items and media strategy...',
+        'forecasting': 'Generating spend forecast and inventory analysis...'
+      };
+      
+      return stepMessages[agentState.current_step] || 'Processing your request...';
+    };
+    
+    const getNextAction = () => {
+      if (agentState.next_action && agentState.next_action !== 'Continue to next step') {
+        return agentState.next_action;
+      }
+      
+      const nextActions = {
+        'campaign_data': 'Proceeding to historical pattern analysis',
+        'advertiser_preferences': 'Generating ACR audience segments',
+        'audience_generation': 'Building executable line items',
+        'campaign_generation': 'Generating spend forecast and inventory analysis',
+        'forecasting': 'Campaign forecasting complete - ready for deployment'
+      };
+      
+      return nextActions[agentState.current_step] || 'Continuing to next step';
+    };
+    
+    return (
+      <div className={`fixed inset-0 z-50 flex items-center justify-center ${
+        isGlassmorphism 
+          ? 'bg-black bg-opacity-40 backdrop-blur-sm' 
+          : 'bg-gray-900 bg-opacity-50'
+      }`}>
+        <div className={`max-w-md w-full mx-4 p-8 rounded-xl ${
+          isGlassmorphism 
+            ? 'neural-glass-panel' 
+            : 'bg-white shadow-2xl border border-gray-200'
+        }`}>
+          {/* Neural Avatar */}
+          <div className="text-center mb-6">
+            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4 ${
+              isGlassmorphism 
+                ? 'neural-glass-info animate-pulse' 
+                : 'bg-blue-100 animate-pulse'
+            }`}>
+              🧠
+            </div>
+            <h3 className={`text-xl font-semibold ${
+              isGlassmorphism 
+                ? 'neural-text-emphasis' 
+                : 'text-gray-900'
+            }`}>
+              Neural is Processing
+            </h3>
+          </div>
+          
+          {/* Processing Message */}
+          <div className="space-y-4">
+            <div className={`text-center ${
+              isGlassmorphism 
+                ? 'neural-text-body' 
+                : 'text-gray-700'
+            }`}>
+              {getProcessingMessage()}
+            </div>
+            
+            {/* Progress Bar */}
+            <div className={`w-full h-2 rounded-full ${
+              isGlassmorphism 
+                ? 'bg-white bg-opacity-20' 
+                : 'bg-gray-200'
+            }`}>
+              <div 
+                className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse"
+                style={{ width: '60%' }}
+              ></div>
+            </div>
+            
+            {/* Next Action */}
+            <div className={`text-sm text-center ${
+              isGlassmorphism 
+                ? 'neural-text-muted' 
+                : 'text-gray-500'
+            }`}>
+              Next: {getNextAction()}
+            </div>
+          </div>
+          
+          {/* Animated Dots */}
+          <div className="flex justify-center mt-6 space-x-1">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full ${
+                  isGlassmorphism 
+                    ? 'bg-blue-400' 
+                    : 'bg-blue-500'
+                } animate-bounce`}
+                style={{ animationDelay: `${i * 0.2}s` }}
+              ></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderStepContent = () => {
     const currentStepData = campaignData.find(data => data.step === agentState.current_step);
     
@@ -2020,6 +2137,10 @@ const AgenticWorkspace: React.FC = () => {
         </div>
       </div>
     </div>
+    
+    {/* Processing Indicator Overlay */}
+    {renderProcessingIndicator()}
+    
     </ThemeContext.Provider>
   );
 };
