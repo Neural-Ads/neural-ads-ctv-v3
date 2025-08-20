@@ -28,22 +28,12 @@ interface ForecastingData {
   forecasting_insights: string[];
 }
 
-interface CampaignSetupData {
-  advertiser?: string;
-  budget?: number;
-  objective?: string;
-  timeline?: string;
-  targetFrequency?: number;
-  additional_requirements?: any;
-}
-
 interface CampaignForecastTableProps {
   data: ForecastingData;
   confidence: number;
-  campaignSetup?: CampaignSetupData;
 }
 
-const CampaignForecastTable: React.FC<CampaignForecastTableProps> = ({ data, confidence, campaignSetup }) => {
+const CampaignForecastTable: React.FC<CampaignForecastTableProps> = ({ data, confidence }) => {
   const { isGlassmorphism } = useTheme();
   const [showDetails, setShowDetails] = useState(false);
 
@@ -118,62 +108,6 @@ const CampaignForecastTable: React.FC<CampaignForecastTableProps> = ({ data, con
         </div>
       </div>
 
-      {/* Campaign Setup Summary */}
-      {campaignSetup && (
-        <div className={`px-6 py-4 ${
-          isGlassmorphism 
-            ? 'border-b border-white border-opacity-20' 
-            : 'border-b border-gray-200 bg-gray-50'
-        }`}>
-          <h4 className={`text-sm font-medium mb-3 ${
-            isGlassmorphism ? 'neural-text-emphasis' : 'text-gray-900'
-          }`}>
-            📋 Campaign Setup
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            {campaignSetup.objective && (
-              <div>
-                <span className={`block ${isGlassmorphism ? 'neural-text-label' : 'text-gray-500'}`}>
-                  Objective
-                </span>
-                <span className={`${isGlassmorphism ? 'neural-text-secondary' : 'text-gray-700'}`}>
-                  {campaignSetup.objective}
-                </span>
-              </div>
-            )}
-            {campaignSetup.targetFrequency && (
-              <div>
-                <span className={`block ${isGlassmorphism ? 'neural-text-label' : 'text-gray-500'}`}>
-                  Target Frequency
-                </span>
-                <span className={`${isGlassmorphism ? 'neural-text-secondary' : 'text-gray-700'}`}>
-                  {campaignSetup.targetFrequency}x
-                </span>
-              </div>
-            )}
-            {campaignSetup.timeline && (
-              <div>
-                <span className={`block ${isGlassmorphism ? 'neural-text-label' : 'text-gray-500'}`}>
-                  Timeline
-                </span>
-                <span className={`${isGlassmorphism ? 'neural-text-secondary' : 'text-gray-700'}`}>
-                  {campaignSetup.timeline}
-                </span>
-              </div>
-            )}
-            {campaignSetup.budget && (
-              <div>
-                <span className={`block ${isGlassmorphism ? 'neural-text-label' : 'text-gray-500'}`}>
-                  Budget
-                </span>
-                <span className={`${isGlassmorphism ? 'neural-text-secondary' : 'text-gray-700'}`}>
-                  {formatCurrency(campaignSetup.budget)}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Key Metrics Grid */}
       <div className="p-6">
@@ -250,16 +184,6 @@ const CampaignForecastTable: React.FC<CampaignForecastTableProps> = ({ data, con
             }`}>
               {formatNumber(campaign.frequency)}x
             </div>
-            {campaignSetup?.targetFrequency && (
-              <div className={`text-xs mt-1 ${
-                Math.abs(campaign.frequency - campaignSetup.targetFrequency) < 0.1 
-                  ? 'text-green-500' 
-                  : 'text-yellow-500'
-              }`}>
-                Target: {campaignSetup.targetFrequency}x
-                {Math.abs(campaign.frequency - campaignSetup.targetFrequency) < 0.1 && ' ✓'}
-              </div>
-            )}
           </div>
 
           <div className={`p-4 rounded-lg ${
