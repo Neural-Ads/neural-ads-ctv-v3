@@ -64,10 +64,52 @@ const AgenticWorkspace: React.FC = () => {
   const [isProTipVisible, setIsProTipVisible] = useState(true);
   const [showAudienceInsights, setShowAudienceInsights] = useState(false);
   
+  // Editable campaign parameters
+  const [editableParams, setEditableParams] = useState({
+    advertiser: '',
+    budget: '',
+    objective: '',
+    timeline: ''
+  });
+  
   // Refs to prevent race conditions
   const processingRef = useRef(false);
   const lastRequestRef = useRef<number>(0);
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Sync editable params with campaign data
+  React.useEffect(() => {
+    const currentStepData = campaignData.find(data => data.step === 'campaign_data');
+    if (currentStepData?.data) {
+      setEditableParams({
+        advertiser: currentStepData.data.advertiser || '',
+        budget: currentStepData.data.budget?.toString() || '',
+        objective: currentStepData.data.objective || '',
+        timeline: currentStepData.data.timeline || ''
+      });
+    }
+  }, [campaignData]);
+  
+  // Handle updating editable parameters
+  const updateEditableParam = (field: keyof typeof editableParams, value: string) => {
+    setEditableParams(prev => ({ ...prev, [field]: value }));
+    
+    // Update the campaign data as well
+    setCampaignData(prev => {
+      const updated = [...prev];
+      const campaignDataIndex = updated.findIndex(item => item.step === 'campaign_data');
+      if (campaignDataIndex >= 0) {
+        const updatedData = { ...updated[campaignDataIndex].data };
+        if (field === 'budget') {
+          updatedData[field] = parseInt(value) || 0;
+        } else {
+          updatedData[field] = value;
+        }
+        updated[campaignDataIndex] = { ...updated[campaignDataIndex], data: updatedData };
+      }
+      return updated;
+    });
+  };
   
   // Session management to prevent conflicts between browser tabs
   const sessionId = useRef<string>(
@@ -889,13 +931,17 @@ const AgenticWorkspace: React.FC = () => {
                         ? 'neural-text-label' 
                         : 'text-gray-700'
                     }`}>Advertiser</label>
-                    <div className={`p-3 rounded-lg font-semibold ${
-                      isGlassmorphism 
-                        ? 'neural-glass neural-text-value' 
-                        : 'bg-gray-50 border border-gray-200 text-gray-900'
-                    }`}>
-                      {currentStepData.data.advertiser || 'Not specified'}
-                    </div>
+                    <input
+                      type="text"
+                      value={editableParams.advertiser}
+                      onChange={(e) => updateEditableParam('advertiser', e.target.value)}
+                      placeholder="Enter advertiser name"
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                    />
                   </div>
                   <div>
                     <label className={`mb-1 block text-sm font-medium ${
@@ -903,13 +949,17 @@ const AgenticWorkspace: React.FC = () => {
                         ? 'neural-text-label' 
                         : 'text-gray-700'
                     }`}>Campaign Budget</label>
-                    <div className={`p-3 rounded-lg font-semibold ${
-                      isGlassmorphism 
-                        ? 'neural-glass neural-text-value' 
-                        : 'bg-gray-50 border border-gray-200 text-gray-900'
-                    }`}>
-                      {currentStepData.data.budget ? `$${currentStepData.data.budget.toLocaleString()}` : 'Not specified'}
-                    </div>
+                    <input
+                      type="number"
+                      value={editableParams.budget}
+                      onChange={(e) => updateEditableParam('budget', e.target.value)}
+                      placeholder="Enter budget amount"
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                    />
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -919,13 +969,17 @@ const AgenticWorkspace: React.FC = () => {
                         ? 'neural-text-label' 
                         : 'text-gray-700'
                     }`}>Campaign Objective</label>
-                    <div className={`p-3 rounded-lg font-semibold ${
-                      isGlassmorphism 
-                        ? 'neural-glass neural-text-value' 
-                        : 'bg-gray-50 border border-gray-200 text-gray-900'
-                    }`}>
-                      {currentStepData.data.objective || 'Not specified'}
-                    </div>
+                    <input
+                      type="text"
+                      value={editableParams.objective}
+                      onChange={(e) => updateEditableParam('objective', e.target.value)}
+                      placeholder="Enter campaign objective"
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                    />
                   </div>
                   <div>
                     <label className={`mb-1 block text-sm font-medium ${
@@ -933,13 +987,17 @@ const AgenticWorkspace: React.FC = () => {
                         ? 'neural-text-label' 
                         : 'text-gray-700'
                     }`}>Timeline</label>
-                    <div className={`p-3 rounded-lg font-semibold ${
-                      isGlassmorphism 
-                        ? 'neural-glass neural-text-value' 
-                        : 'bg-gray-50 border border-gray-200 text-gray-900'
-                    }`}>
-                      {currentStepData.data.timeline || 'Not specified'}
-                    </div>
+                    <input
+                      type="text"
+                      value={editableParams.timeline}
+                      onChange={(e) => updateEditableParam('timeline', e.target.value)}
+                      placeholder="Enter campaign timeline"
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                    />
                   </div>
                 </div>
               </div>
