@@ -69,6 +69,7 @@ const AgenticWorkspace: React.FC = () => {
     advertiser: '',
     budget: '',
     objective: '',
+    targetFrequency: '2.5',
     startDate: '',
     endDate: ''
   });
@@ -104,6 +105,7 @@ const AgenticWorkspace: React.FC = () => {
         advertiser: currentStepData.data.advertiser || '',
         budget: currentStepData.data.budget?.toString() || '',
         objective: currentStepData.data.objective || '',
+        targetFrequency: currentStepData.data.targetFrequency?.toString() || '2.5',
         startDate: startDate,
         endDate: endDate
       });
@@ -150,6 +152,8 @@ const AgenticWorkspace: React.FC = () => {
         
         if (field === 'budget') {
           updatedData[field] = parseInt(value) || 0;
+        } else if (field === 'targetFrequency') {
+          updatedData[field] = parseFloat(value) || 2.5;
         } else if (field === 'startDate' || field === 'endDate') {
           // Update the individual date field and reconstruct timeline
           const newParams = { ...editableParams, [field]: value };
@@ -1027,23 +1031,51 @@ const AgenticWorkspace: React.FC = () => {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className={`mb-1 block text-sm font-medium ${
-                    isGlassmorphism 
-                      ? 'neural-text-label' 
-                      : 'text-gray-700'
-                  }`}>Campaign Objective</label>
-                  <input
-                    type="text"
-                    value={editableParams.objective}
-                    onChange={(e) => updateEditableParam('objective', e.target.value)}
-                    placeholder="Enter campaign objective"
-                    className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className={`mb-1 block text-sm font-medium ${
                       isGlassmorphism 
-                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
-                    }`}
-                  />
+                        ? 'neural-text-label' 
+                        : 'text-gray-700'
+                    }`}>Campaign Objective</label>
+                    <input
+                      type="text"
+                      value={editableParams.objective}
+                      onChange={(e) => updateEditableParam('objective', e.target.value)}
+                      placeholder="Enter campaign objective"
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`mb-1 block text-sm font-medium ${
+                      isGlassmorphism 
+                        ? 'neural-text-label' 
+                        : 'text-gray-700'
+                    }`}>Target Frequency</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="1.0"
+                      max="10.0"
+                      value={editableParams.targetFrequency}
+                      onChange={(e) => updateEditableParam('targetFrequency', e.target.value)}
+                      placeholder="2.5"
+                      className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                        isGlassmorphism 
+                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                    />
+                    <p className={`text-xs mt-1 ${
+                      isGlassmorphism ? 'neural-text-muted' : 'text-gray-500'
+                    }`}>
+                      Average times each viewer sees the ad
+                    </p>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div>

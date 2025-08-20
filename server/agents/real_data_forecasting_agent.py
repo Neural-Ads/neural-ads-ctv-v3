@@ -70,7 +70,8 @@ class RealDataForecastingAgent:
         line_items: List[Dict[str, Any]],
         campaign_budget: float,
         campaign_timeline: str = "4 weeks",
-        targeting_criteria: Dict[str, List[str]] = None
+        targeting_criteria: Dict[str, List[str]] = None,
+        target_frequency: float = 2.5
     ) -> RealDataForecastingResult:
         """
         Generate enhanced forecast using real fill rate and inventory data
@@ -107,7 +108,8 @@ class RealDataForecastingAgent:
             real_data_info,
             targeting_criteria,
             advertiser,
-            campaign_timeline
+            campaign_timeline,
+            target_frequency
         )
         
         # Calculate performance breakdown
@@ -117,7 +119,7 @@ class RealDataForecastingAgent:
         
         # Generate enhanced insights using real data
         insights = self._generate_campaign_insights(
-            campaign_forecast, targeting_criteria, real_data_info, advertiser
+            campaign_forecast, targeting_criteria, real_data_info, advertiser, target_frequency
         )
         
         # Calculate confidence based on real data availability
@@ -556,7 +558,8 @@ class RealDataForecastingAgent:
         real_data_info: Dict[str, Any],
         targeting_criteria: Dict[str, List[str]],
         advertiser: str,
-        campaign_timeline: str
+        campaign_timeline: str,
+        target_frequency: float = 2.5
     ) -> CampaignForecast:
         """Generate comprehensive campaign-level forecast"""
         
@@ -609,9 +612,15 @@ class RealDataForecastingAgent:
         else:
             effective_cpm = estimated_cpm
         
-        # Estimate reach and frequency
-        estimated_reach = int(final_impressions_mm * 1_000_000 * 0.65)  # Assume 65% unique reach
-        frequency = final_impressions_mm * 1_000_000 / estimated_reach if estimated_reach > 0 else 1.0
+        # Calculate reach based on target frequency
+        # Formula: Reach = Impressions / Target Frequency
+        if target_frequency > 0 and final_impressions_mm > 0:
+            estimated_reach = int((final_impressions_mm * 1_000_000) / target_frequency)
+            actual_frequency = (final_impressions_mm * 1_000_000) / estimated_reach if estimated_reach > 0 else target_frequency
+        else:
+            # Fallback to default calculation
+            estimated_reach = int(final_impressions_mm * 1_000_000 * 0.65)
+            actual_frequency = final_impressions_mm * 1_000_000 / estimated_reach if estimated_reach > 0 else 1.0
         
         # Generate campaign notes
         notes = self._generate_campaign_notes(
@@ -627,7 +636,7 @@ class RealDataForecastingAgent:
             fill_rate_percent=actual_fill_rate * 100,
             effective_cpm_dollars=effective_cpm,
             estimated_reach=estimated_reach,
-            frequency=frequency,
+            frequency=actual_frequency,
             notes=notes
         )
     
@@ -692,7 +701,8 @@ class RealDataForecastingAgent:
         campaign_forecast: CampaignForecast,
         targeting_criteria: Dict[str, List[str]],
         real_data_info: Dict[str, Any],
-        advertiser: str
+        advertiser: str,
+        target_frequency: float = 2.5
     ) -> List[str]:
         """Generate campaign-level insights instead of weekly insights"""
         insights = []
@@ -700,9 +710,12 @@ class RealDataForecastingAgent:
         # Overall campaign performance
         insights.append(f"Campaign projected to deliver {campaign_forecast.forecasted_impressions_mm:.1f}M impressions over {campaign_forecast.campaign_duration}")
         
-        # Reach and frequency insight
+        # Reach and frequency insight with target frequency comparison
         reach_millions = campaign_forecast.estimated_reach / 1_000_000
-        insights.append(f"Estimated reach: {reach_millions:.1f}M unique viewers with {campaign_forecast.frequency:.1f}x average frequency")
+        if abs(campaign_forecast.frequency - target_frequency) < 0.1:
+            insights.append(f"Target frequency achieved: {reach_millions:.1f}M unique viewers with {campaign_forecast.frequency:.1f}x frequency")
+        else:
+            insights.append(f"Estimated reach: {reach_millions:.1f}M unique viewers with {campaign_forecast.frequency:.1f}x frequency (target: {target_frequency:.1f}x)")
         
         # Cost efficiency insight
         cost_per_reach = (campaign_forecast.forecasted_impressions_mm * campaign_forecast.effective_cpm_dollars) / reach_millions if reach_millions > 0 else 0

@@ -153,6 +153,7 @@ class MultiAgentOrchestrator:
                 "budget": self.campaign_parameters.budget,
                 "objective": self.campaign_parameters.objective,
                 "timeline": self.campaign_parameters.timeline,
+                "targetFrequency": self.campaign_parameters.target_frequency,
                 "additional_requirements": self.campaign_parameters.additional_requirements or {}
             }
             
@@ -373,7 +374,8 @@ class MultiAgentOrchestrator:
                     "networks": self.advertiser_preferences.network_preferences,
                     "content": self.advertiser_preferences.content_preferences,
                     "geo": self.advertiser_preferences.geo_preferences
-                }
+                },
+                target_frequency=self.campaign_parameters.target_frequency
             )
             
             reasoning = await self.forecasting_agent.generate_reasoning(self.forecasting_result)

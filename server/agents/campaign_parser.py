@@ -18,6 +18,7 @@ class CampaignParameters:
     budget: float
     objective: str
     timeline: str
+    target_frequency: float
     confidence: float
     additional_requirements: Optional[Dict[str, Any]] = None
 
@@ -52,6 +53,7 @@ class CampaignParserAgent:
         - budget: Campaign budget amount (convert to numeric value)
         - objective: Campaign goal (awareness, conversion, engagement, etc.)
         - timeline: Campaign duration or dates
+        - target_frequency: Desired frequency (times each viewer sees the ad). Default: 2.5
         - additional_requirements: Any special targeting, creative, or technical requirements
         
         Return ONLY a valid JSON object with these fields. If information is missing, use reasonable defaults or "Not specified".
@@ -62,6 +64,7 @@ class CampaignParserAgent:
             "budget": 250000,
             "objective": "awareness", 
             "timeline": "30 days",
+            "target_frequency": 3.0,
             "additional_requirements": {
                 "target_audience": "sports enthusiasts",
                 "geographic_focus": "nationwide"
@@ -88,6 +91,7 @@ class CampaignParserAgent:
                 budget=float(data.get("budget", 100000)),
                 objective=data.get("objective", "awareness"),
                 timeline=data.get("timeline", "30 days"),
+                target_frequency=float(data.get("target_frequency", 2.5)),
                 confidence=0.85,
                 additional_requirements=data.get("additional_requirements", {})
             )
@@ -118,6 +122,7 @@ class CampaignParserAgent:
             budget=budget,
             objective="awareness",
             timeline="30 days",
+            target_frequency=2.5,
             confidence=0.60,
             additional_requirements={"source": "fallback_parsing"}
         )
