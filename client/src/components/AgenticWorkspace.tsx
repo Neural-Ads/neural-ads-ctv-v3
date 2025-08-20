@@ -1085,8 +1085,8 @@ const AgenticWorkspace: React.FC = () => {
                     }`}>{segment.name}</h4>
                     <div className={`text-sm font-medium px-3 py-1 rounded-full ${
                       isGlassmorphism 
-                        ? 'bg-cyan-500/20 text-cyan-300' 
-                        : 'bg-cyan-100 text-cyan-700'
+                        ? 'bg-orange-500/20 text-orange-300' 
+                        : 'bg-orange-100 text-orange-700'
                     }`}>
                       {segment.scale.toLocaleString()} HH
                     </div>
@@ -1130,8 +1130,8 @@ const AgenticWorkspace: React.FC = () => {
                         {segment.behaviors.map((behavior, idx) => (
                           <span key={idx} className={`text-xs px-2 py-1 rounded ${
                             isGlassmorphism 
-                              ? 'bg-cyan-500/30 text-cyan-200' 
-                              : 'bg-cyan-100 text-cyan-700'
+                              ? 'bg-orange-500/30 text-orange-200' 
+                              : 'bg-orange-100 text-orange-700'
                           }`}>
                             {behavior}
                           </span>
@@ -1140,7 +1140,7 @@ const AgenticWorkspace: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="flex justify-between items-center pt-3 border-t border-cyan-200/30">
+                  <div className="flex justify-between items-center pt-3 border-t border-orange-200/30">
                     <div className="flex gap-6 text-sm">
                       <span className={`${
                         isGlassmorphism 
@@ -1159,8 +1159,8 @@ const AgenticWorkspace: React.FC = () => {
                     </div>
                     <div className={`text-sm font-medium ${
                       isGlassmorphism 
-                        ? 'text-cyan-300' 
-                        : 'text-cyan-600'
+                        ? 'text-orange-300' 
+                        : 'text-orange-600'
                     }`}>
                       High Confidence
                     </div>
@@ -1169,10 +1169,10 @@ const AgenticWorkspace: React.FC = () => {
               ))}
             </div>
             
-            <div className="neural-glass-cyan mt-6 p-4">
+            <div className="neural-glass-warning mt-6 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="text-cyan-400 mr-3">✓</div>
+                  <div className="text-orange-400 mr-3">✓</div>
                   <div>
                     <p className={`font-semibold ${
                       isGlassmorphism 
@@ -1797,8 +1797,8 @@ const AgenticWorkspace: React.FC = () => {
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shadow-lg ${
                       agentState.current_step === 'campaign_data' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' :
                       agentState.current_step === 'advertiser_preferences' ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white' :
-                      agentState.current_step === 'audience_generation' ? 'bg-gradient-to-r from-cyan-500 to-teal-600 text-white' :
-                      agentState.current_step === 'campaign_generation' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' :
+                      agentState.current_step === 'audience_generation' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' :
+                      agentState.current_step === 'campaign_generation' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' :
                       'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
                     }`}>
                       {steps.find(s => s.id === agentState.current_step)?.icon || '📊'}

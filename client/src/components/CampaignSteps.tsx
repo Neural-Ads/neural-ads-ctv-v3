@@ -37,13 +37,13 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
       id: 'audience_generation',
       title: 'Audience Analysis',
       description: 'Analyze target audience',
-      color: 'teal'
+      color: 'orange'
     },
     {
       id: 'campaign_generation',
       title: 'Media Plan',
       description: 'Generate media strategy',
-      color: 'orange'
+      color: 'blue'
     }
   ];
 
@@ -151,7 +151,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                 {/* Connection line */}
                 {index < steps.length - 1 && (
                   <div className={`absolute top-5 left-1/2 w-full h-0.5 -translate-x-1/2 -z-10 ${
-                    status === 'completed' ? 'bg-gradient-to-r from-cyan-400 to-teal-500' :
+                    status === 'completed' ? 'bg-gradient-to-r from-orange-400 to-orange-500' :
                     status === 'active' ? 'bg-gradient-to-r from-blue-400 to-blue-500' :
                     isGlassmorphism ? 'bg-white bg-opacity-20' : 'bg-gray-200'
                   }`}></div>
@@ -185,7 +185,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                     }`
                   : `${
                       status === 'active' ? 'bg-blue-50 border-b border-blue-200' :
-                      status === 'completed' ? 'bg-cyan-50 border-b border-cyan-200' :
+                      status === 'completed' ? 'bg-orange-50 border-b border-orange-200' :
                       'bg-gray-50 border-b border-gray-200'
                     }`
               }`}>
@@ -207,7 +207,7 @@ const CampaignSteps: React.FC<CampaignStepsProps> = ({
                   
                   <div className={`w-3 h-3 rounded-full ${
                     status === 'active' ? 'bg-blue-400 animate-pulse' :
-                    status === 'completed' ? 'bg-cyan-400' :
+                    status === 'completed' ? 'bg-orange-400' :
                     'bg-gray-400'
                   }`}></div>
                 </div>
