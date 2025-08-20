@@ -378,29 +378,28 @@ class MultiAgentOrchestrator:
             
             reasoning = await self.forecasting_agent.generate_reasoning(self.forecasting_result)
             
-            # Convert forecasting result to dict for frontend
-            weekly_forecasts_data = []
-            for forecast in self.forecasting_result.weekly_forecasts:
-                weekly_forecasts_data.append({
-                    "week_number": forecast.week_number,
-                    "week_dates": forecast.week_dates,
-                    "inventory_available_mm": forecast.inventory_available_mm,
-                    "forecasted_impressions_mm": forecast.forecasted_impressions_mm,
-                    "fill_rate_percent": forecast.fill_rate_percent,
-                    "ecpm_dollars": forecast.ecpm_dollars,
-                    "notes": forecast.notes
-                })
+            # Convert forecasting result to dict for frontend (campaign-level instead of weekly)
+            campaign_forecast_data = {
+                "campaign_duration": self.forecasting_result.campaign_forecast.campaign_duration,
+                "campaign_dates": self.forecasting_result.campaign_forecast.campaign_dates,
+                "total_inventory_available_mm": self.forecasting_result.campaign_forecast.total_inventory_available_mm,
+                "forecasted_impressions_mm": self.forecasting_result.campaign_forecast.forecasted_impressions_mm,
+                "fill_rate_percent": self.forecasting_result.campaign_forecast.fill_rate_percent,
+                "effective_cpm_dollars": self.forecasting_result.campaign_forecast.effective_cpm_dollars,
+                "estimated_reach": self.forecasting_result.campaign_forecast.estimated_reach,
+                "frequency": self.forecasting_result.campaign_forecast.frequency,
+                "notes": self.forecasting_result.campaign_forecast.notes
+            }
             
             data = {
                 "advertiser": self.forecasting_result.advertiser,
                 "campaign_total_budget": self.forecasting_result.campaign_total_budget,
-                "weekly_forecasts": weekly_forecasts_data,
-                "month_totals": self.forecasting_result.month_totals,
-                "campaign_totals": self.forecasting_result.campaign_totals,
+                "campaign_forecast": campaign_forecast_data,
+                "performance_breakdown": self.forecasting_result.performance_breakdown,
                 "forecasting_insights": self.forecasting_result.forecasting_insights
             }
             
-            print(f"✅ Forecasting complete: {len(weekly_forecasts_data)} weeks analyzed")
+            print(f"✅ Forecasting complete: Campaign-level analysis for {self.forecasting_result.campaign_forecast.campaign_duration}")
             
             return WorkflowResult(
                 step=WorkflowStep.FORECASTING,

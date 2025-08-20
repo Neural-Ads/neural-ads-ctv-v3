@@ -19,22 +19,23 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from data_loader import get_real_data_loader, RealDataLoader
 
 @dataclass
-class WeeklyForecast:
-    week_number: int
-    week_dates: str
-    inventory_available_mm: float
+class CampaignForecast:
+    campaign_duration: str
+    campaign_dates: str
+    total_inventory_available_mm: float
     forecasted_impressions_mm: float
     fill_rate_percent: float
-    ecpm_dollars: float
-    notes: str
+    effective_cpm_dollars: float
+    estimated_reach: int
+    frequency: float
+    notes: List[str]
 
 @dataclass
 class RealDataForecastingResult:
     advertiser: str
     campaign_total_budget: float
-    weekly_forecasts: List[WeeklyForecast]
-    month_totals: Dict[str, float]
-    campaign_totals: Dict[str, float]
+    campaign_forecast: CampaignForecast
+    performance_breakdown: Dict[str, float]
     forecasting_insights: List[str]
     confidence: float
     data_source: str  # "real_data" vs "mock_data"
@@ -99,28 +100,24 @@ class RealDataForecastingAgent:
             targeting_criteria, campaign_budget, num_weeks
         )
         
-        # Calculate weekly budget distribution
-        weekly_budgets = self._distribute_budget_weekly(campaign_budget, num_weeks)
+        # Generate single campaign forecast instead of weekly breakdowns
+        campaign_forecast = await self._generate_campaign_forecast(
+            campaign_budget,
+            num_weeks,
+            real_data_info,
+            targeting_criteria,
+            advertiser,
+            campaign_timeline
+        )
         
-        # Generate weekly forecasts using real data
-        weekly_forecasts = []
-        for week in range(num_weeks):
-            forecast = await self._generate_real_data_weekly_forecast(
-                week + 1,
-                weekly_budgets[week],
-                real_data_info,
-                targeting_criteria,
-                advertiser
-            )
-            weekly_forecasts.append(forecast)
-        
-        # Calculate totals
-        month_totals = self._calculate_month_totals(weekly_forecasts)
-        campaign_totals = self._calculate_campaign_totals(weekly_forecasts)
+        # Calculate performance breakdown
+        performance_breakdown = self._calculate_performance_breakdown(
+            campaign_forecast, real_data_info, targeting_criteria
+        )
         
         # Generate enhanced insights using real data
-        insights = self._generate_real_data_insights(
-            weekly_forecasts, targeting_criteria, real_data_info, advertiser
+        insights = self._generate_campaign_insights(
+            campaign_forecast, targeting_criteria, real_data_info, advertiser
         )
         
         # Calculate confidence based on real data availability
@@ -131,9 +128,8 @@ class RealDataForecastingAgent:
         return RealDataForecastingResult(
             advertiser=advertiser,
             campaign_total_budget=campaign_budget,
-            weekly_forecasts=weekly_forecasts,
-            month_totals=month_totals,
-            campaign_totals=campaign_totals,
+            campaign_forecast=campaign_forecast,
+            performance_breakdown=performance_breakdown,
             forecasting_insights=insights,
             confidence=confidence,
             data_source="real_data" if self.data_loader else "mock_data",
@@ -213,14 +209,14 @@ class RealDataForecastingAgent:
             'targeting_breakdown': {}
         }
     
-    async def _generate_real_data_weekly_forecast(
+    async def _generate_real_data_weekly_forecast_deprecated(
         self,
         week_number: int,
         weekly_budget: float,
         real_data_info: Dict[str, Any],
         targeting_criteria: Dict[str, List[str]],
         advertiser: str
-    ) -> WeeklyForecast:
+    ) -> dict:
         """Generate weekly forecast using real data"""
         
         # Calculate week dates
@@ -315,8 +311,8 @@ class RealDataForecastingAgent:
         
         return "; ".join(notes)
     
-    def _generate_real_data_insights(self,
-                                   weekly_forecasts: List[WeeklyForecast],
+    def _generate_real_data_insights_deprecated(self,
+                                   weekly_forecasts: list,
                                    targeting_criteria: Dict[str, List[str]],
                                    real_data_info: Dict[str, Any],
                                    advertiser: str) -> List[str]:
@@ -436,7 +432,7 @@ class RealDataForecastingAgent:
         # Calculate weekly budgets
         return [total_budget * weight for weight in normalized_weights]
     
-    def _calculate_month_totals(self, weekly_forecasts: List[WeeklyForecast]) -> Dict[str, float]:
+    def _calculate_month_totals_deprecated(self, weekly_forecasts: list) -> Dict[str, float]:
         """Calculate monthly totals from weekly forecasts"""
         
         total_inventory = sum(f.inventory_available_mm for f in weekly_forecasts)
@@ -451,9 +447,162 @@ class RealDataForecastingAgent:
             "avg_ecpm_dollars": round(avg_ecpm, 2)
         }
     
-    def _calculate_campaign_totals(self, weekly_forecasts: List[WeeklyForecast]) -> Dict[str, float]:
+    def _calculate_campaign_totals_deprecated(self, weekly_forecasts: list) -> Dict[str, float]:
         """Calculate campaign totals from weekly forecasts"""
-        return self._calculate_month_totals(weekly_forecasts)
+        return self._calculate_month_totals_deprecated(weekly_forecasts)
+    
+    async def _generate_campaign_forecast(
+        self,
+        campaign_budget: float,
+        num_weeks: int,
+        real_data_info: Dict[str, Any],
+        targeting_criteria: Dict[str, List[str]],
+        advertiser: str,
+        campaign_timeline: str
+    ) -> CampaignForecast:
+        """Generate comprehensive campaign-level forecast"""
+        
+        # Calculate campaign dates
+        today = datetime.now()
+        days_ahead = 7 - today.weekday()
+        if days_ahead <= 0:
+            days_ahead += 7
+        
+        start_date = today + timedelta(days=days_ahead)
+        end_date = start_date + timedelta(days=(num_weeks * 7) - 1)
+        campaign_dates = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+        
+        # Get real data values
+        fill_rate = real_data_info['fill_rate_estimate']
+        estimated_cpm = real_data_info['estimated_cpm']
+        
+        # Calculate total inventory available for campaign
+        total_weekly_inventory = sum(real_data_info['weekly_distribution'])
+        
+        # Calculate total impressions based on budget and CPM
+        total_estimated_impressions = (campaign_budget / estimated_cpm) * 1000
+        total_estimated_impressions_mm = total_estimated_impressions / 1_000_000
+        
+        # Apply fill rate
+        forecasted_impressions_mm = total_estimated_impressions_mm * fill_rate
+        
+        # Ensure inventory constraints
+        final_impressions_mm = min(forecasted_impressions_mm, total_weekly_inventory)
+        actual_fill_rate = final_impressions_mm / total_estimated_impressions_mm if total_estimated_impressions_mm > 0 else fill_rate
+        
+        # Calculate effective CPM
+        effective_cpm = (campaign_budget / final_impressions_mm) / 1000 if final_impressions_mm > 0 else estimated_cpm
+        
+        # Estimate reach and frequency
+        estimated_reach = int(final_impressions_mm * 1_000_000 * 0.65)  # Assume 65% unique reach
+        frequency = final_impressions_mm * 1_000_000 / estimated_reach if estimated_reach > 0 else 1.0
+        
+        # Generate campaign notes
+        notes = self._generate_campaign_notes(
+            campaign_budget, final_impressions_mm, actual_fill_rate, 
+            effective_cpm, targeting_criteria, real_data_info
+        )
+        
+        return CampaignForecast(
+            campaign_duration=campaign_timeline,
+            campaign_dates=campaign_dates,
+            total_inventory_available_mm=total_weekly_inventory,
+            forecasted_impressions_mm=final_impressions_mm,
+            fill_rate_percent=actual_fill_rate * 100,
+            effective_cpm_dollars=effective_cpm,
+            estimated_reach=estimated_reach,
+            frequency=frequency,
+            notes=notes
+        )
+    
+    def _calculate_performance_breakdown(
+        self,
+        campaign_forecast: CampaignForecast,
+        real_data_info: Dict[str, Any],
+        targeting_criteria: Dict[str, List[str]]
+    ) -> Dict[str, float]:
+        """Calculate performance metrics breakdown"""
+        return {
+            "total_impressions_mm": campaign_forecast.forecasted_impressions_mm,
+            "effective_cpm": campaign_forecast.effective_cpm_dollars,
+            "fill_rate_percent": campaign_forecast.fill_rate_percent,
+            "estimated_reach": float(campaign_forecast.estimated_reach),
+            "average_frequency": campaign_forecast.frequency,
+            "inventory_utilization_percent": (campaign_forecast.forecasted_impressions_mm / campaign_forecast.total_inventory_available_mm) * 100 if campaign_forecast.total_inventory_available_mm > 0 else 0
+        }
+    
+    def _generate_campaign_notes(
+        self,
+        budget: float,
+        impressions_mm: float,
+        fill_rate: float,
+        effective_cpm: float,
+        targeting_criteria: Dict[str, List[str]],
+        real_data_info: Dict[str, Any]
+    ) -> List[str]:
+        """Generate campaign-specific notes"""
+        notes = []
+        
+        # Budget efficiency note
+        if effective_cpm < 8:
+            notes.append(f"Excellent cost efficiency at ${effective_cpm:.2f} eCPM")
+        elif effective_cpm < 15:
+            notes.append(f"Competitive eCPM of ${effective_cpm:.2f} for targeted reach")
+        else:
+            notes.append(f"Premium positioning with ${effective_cpm:.2f} eCPM - quality inventory")
+        
+        # Fill rate note
+        if fill_rate > 0.8:
+            notes.append(f"High fill rate ({fill_rate*100:.1f}%) indicates strong inventory availability")
+        elif fill_rate > 0.6:
+            notes.append(f"Moderate fill rate ({fill_rate*100:.1f}%) - consider broader targeting for scale")
+        else:
+            notes.append(f"Limited fill rate ({fill_rate*100:.1f}%) - highly competitive targeting")
+        
+        # Scale note
+        if impressions_mm > 10:
+            notes.append("Large-scale campaign with significant reach potential")
+        elif impressions_mm > 2:
+            notes.append("Medium-scale campaign with balanced reach and frequency")
+        else:
+            notes.append("Focused campaign with concentrated targeting")
+        
+        return notes
+    
+    def _generate_campaign_insights(
+        self,
+        campaign_forecast: CampaignForecast,
+        targeting_criteria: Dict[str, List[str]],
+        real_data_info: Dict[str, Any],
+        advertiser: str
+    ) -> List[str]:
+        """Generate campaign-level insights instead of weekly insights"""
+        insights = []
+        
+        # Overall campaign performance
+        insights.append(f"Campaign projected to deliver {campaign_forecast.forecasted_impressions_mm:.1f}M impressions over {campaign_forecast.campaign_duration}")
+        
+        # Reach and frequency insight
+        reach_millions = campaign_forecast.estimated_reach / 1_000_000
+        insights.append(f"Estimated reach: {reach_millions:.1f}M unique viewers with {campaign_forecast.frequency:.1f}x average frequency")
+        
+        # Cost efficiency insight
+        cost_per_reach = (campaign_forecast.forecasted_impressions_mm * campaign_forecast.effective_cpm_dollars) / reach_millions if reach_millions > 0 else 0
+        insights.append(f"Cost per million reached: ${cost_per_reach:,.0f} with ${campaign_forecast.effective_cpm_dollars:.2f} effective CPM")
+        
+        # Fill rate and inventory insight
+        if campaign_forecast.fill_rate_percent > 80:
+            insights.append(f"Strong inventory availability ({campaign_forecast.fill_rate_percent:.1f}% fill rate) - campaign should deliver as planned")
+        else:
+            insights.append(f"Moderate inventory constraints ({campaign_forecast.fill_rate_percent:.1f}% fill rate) - consider optimizing targeting")
+        
+        # Data source confidence
+        if real_data_info.get('data_confidence', 0.5) > 0.7:
+            insights.append("Forecast based on strong historical data patterns - high confidence projections")
+        else:
+            insights.append("Forecast uses industry benchmarks - monitor early performance for optimization")
+        
+        return insights
     
     async def generate_reasoning(self, forecast_result: RealDataForecastingResult) -> str:
         """Generate human-readable reasoning for the real data forecasting analysis"""
