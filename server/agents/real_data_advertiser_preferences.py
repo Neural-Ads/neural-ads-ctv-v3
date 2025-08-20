@@ -264,39 +264,59 @@ class RealDataAdvertiserPreferencesAgent:
                                    advertiser_name: str,
                                    advertiser_data: pd.Series,
                                    network_performance: Dict[str, float]) -> List[str]:
-        """Generate insights based on real data analysis"""
+        """Generate insights based on real data analysis with detailed percentages"""
         insights = []
         
         # Total activity insight
         total_packets = advertiser_data['total_packets']
         insights.append(f"Historical data shows {total_packets:,} total ad requests")
         
-        # Network performance insights
+        # Network performance insights with percentages
         if network_performance:
             top_network = max(network_performance.items(), key=lambda x: x[1])
             insights.append(f"Strongest performance on {top_network[0]} network ({top_network[1]:.1f}% of traffic)")
             
             if len(network_performance) > 1:
-                insights.append(f"Active across {len(network_performance)} networks - multi-channel approach preferred")
+                # Show top 3 networks with percentages
+                top_3_networks = sorted(network_performance.items(), key=lambda x: x[1], reverse=True)[:3]
+                network_breakdown = ", ".join([f"{net} ({perc:.1f}%)" for net, perc in top_3_networks])
+                insights.append(f"Multi-channel approach: {network_breakdown}")
+                
+                # Network diversity insight
+                if len(network_performance) >= 5:
+                    insights.append(f"Highly diversified across {len(network_performance)} networks - broad reach strategy")
+                elif len(network_performance) >= 3:
+                    insights.append(f"Balanced distribution across {len(network_performance)} key networks")
         
-        # CPM insights
+        # CPM insights with context
         if 'avg_cpm' in advertiser_data.index and not pd.isna(advertiser_data['avg_cpm']):
             avg_cpm = advertiser_data['avg_cpm']
+            cpm_range = f"${advertiser_data.get('min_cpm', 0):.2f}-${advertiser_data.get('max_cpm', 0):.2f}"
+            
             if avg_cpm > 15:
-                insights.append(f"Premium CPM strategy (${avg_cpm:.2f} average) - quality-focused approach")
+                insights.append(f"Premium CPM strategy: ${avg_cpm:.2f} avg (range: {cpm_range}) - quality-focused approach")
             elif avg_cpm > 10:
-                insights.append(f"Competitive CPM range (${avg_cpm:.2f} average) - balanced efficiency")
+                insights.append(f"Competitive CPM positioning: ${avg_cpm:.2f} avg (range: {cpm_range}) - balanced efficiency")
             else:
-                insights.append(f"Cost-efficient approach (${avg_cpm:.2f} average) - volume-focused")
+                insights.append(f"Cost-efficient strategy: ${avg_cpm:.2f} avg (range: {cpm_range}) - volume-focused")
         
-        # Geographic diversity insight
+        # Geographic diversity insight with percentages
         zip_cols = [col for col in advertiser_data.index if col.startswith('zip_') and advertiser_data[col] > 0]
+        total_geo_activity = sum([advertiser_data[col] for col in zip_cols]) if zip_cols else 0
+        
         if len(zip_cols) > 100:
-            insights.append("Broad geographic reach - nationwide targeting strategy")
+            # Calculate top markets percentage
+            if total_geo_activity > 0:
+                zip_data = [(col.replace('zip_', ''), advertiser_data[col]) for col in zip_cols]
+                top_zips = sorted(zip_data, key=lambda x: x[1], reverse=True)[:3]
+                top_markets_pct = sum([z[1] for z in top_zips]) / total_geo_activity * 100
+                insights.append(f"Nationwide reach ({len(zip_cols)} markets) - top 3 markets represent {top_markets_pct:.1f}% of activity")
+            else:
+                insights.append(f"Broad geographic reach across {len(zip_cols)} markets - nationwide strategy")
         elif len(zip_cols) > 20:
-            insights.append("Selective geographic targeting - focused regional approach")
+            insights.append(f"Regional focus across {len(zip_cols)} targeted markets - selective approach")
         else:
-            insights.append("Highly targeted geographic strategy - premium market focus")
+            insights.append(f"Highly concentrated in {len(zip_cols)} premium markets - focused strategy")
         
         return insights
     
@@ -463,7 +483,7 @@ class RealDataAdvertiserPreferencesAgent:
         elif any(x in domain for x in ['walmart', 'target', 'amazon', 'costco']):
             content_preferences.extend(["Family Entertainment", "Lifestyle Shows", "Reality TV", "Local Programming"])
         else:
-            # Network-based content mapping for other advertisers
+            # Network-based content mapping for other advertisers with percentages
             network_content_mapping = {
                 'accuweather': ['News', 'Weather Content'],
                 'aetv': ['Reality TV', 'Drama', 'Documentary'],
@@ -477,10 +497,20 @@ class RealDataAdvertiserPreferencesAgent:
                 'discovery': ['Documentary', 'Reality TV', 'Educational']
             }
             
+            # Add content preferences with network percentages for context
+            content_with_percentages = []
             for network, percentage in network_performance.items():
                 network_lower = network.lower()
                 if network_lower in network_content_mapping and percentage > 5.0:
-                    content_preferences.extend(network_content_mapping[network_lower])
+                    base_content = network_content_mapping[network_lower]
+                    # Add the primary content type with percentage context
+                    if base_content:
+                        content_with_percentages.append(f"{base_content[0]} ({percentage:.1f}% via {network})")
+                        # Add other content types without percentages to avoid clutter
+                        content_preferences.extend(base_content[1:])
+            
+            # Add the percentage-annotated content to the beginning
+            content_preferences = content_with_percentages + content_preferences
         
         # Remove duplicates and limit
         content_preferences = list(dict.fromkeys(content_preferences))[:4]
