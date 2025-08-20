@@ -69,7 +69,8 @@ const AgenticWorkspace: React.FC = () => {
     advertiser: '',
     budget: '',
     objective: '',
-    timeline: ''
+    startDate: '',
+    endDate: ''
   });
   
   // Refs to prevent race conditions
@@ -81,11 +82,26 @@ const AgenticWorkspace: React.FC = () => {
   React.useEffect(() => {
     const currentStepData = campaignData.find(data => data.step === 'campaign_data');
     if (currentStepData?.data) {
+      // Parse timeline if it exists (e.g., "Jan 1, 2024 - Feb 28, 2024")
+      let startDate = '';
+      let endDate = '';
+      if (currentStepData.data.timeline) {
+        const timelineParts = currentStepData.data.timeline.split(' - ');
+        if (timelineParts.length === 2) {
+          // Try to parse existing timeline format
+          const start = new Date(timelineParts[0]);
+          const end = new Date(timelineParts[1]);
+          if (!isNaN(start.getTime())) startDate = start.toISOString().split('T')[0];
+          if (!isNaN(end.getTime())) endDate = end.toISOString().split('T')[0];
+        }
+      }
+      
       setEditableParams({
         advertiser: currentStepData.data.advertiser || '',
         budget: currentStepData.data.budget?.toString() || '',
         objective: currentStepData.data.objective || '',
-        timeline: currentStepData.data.timeline || ''
+        startDate: startDate,
+        endDate: endDate
       });
     }
   }, [campaignData]);
@@ -100,11 +116,38 @@ const AgenticWorkspace: React.FC = () => {
       const campaignDataIndex = updated.findIndex(item => item.step === 'campaign_data');
       if (campaignDataIndex >= 0) {
         const updatedData = { ...updated[campaignDataIndex].data };
+        
         if (field === 'budget') {
           updatedData[field] = parseInt(value) || 0;
+        } else if (field === 'startDate' || field === 'endDate') {
+          // Update the individual date field and reconstruct timeline
+          const newParams = { ...editableParams, [field]: value };
+          if (newParams.startDate && newParams.endDate) {
+            const startDate = new Date(newParams.startDate);
+            const endDate = new Date(newParams.endDate);
+            updatedData.timeline = `${startDate.toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            })} - ${endDate.toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            })}`;
+          } else if (newParams.startDate) {
+            const startDate = new Date(newParams.startDate);
+            updatedData.timeline = `${startDate.toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            })} - TBD`;
+          } else {
+            updatedData.timeline = 'TBD';
+          }
         } else {
           updatedData[field] = value;
         }
+        
         updated[campaignDataIndex] = { ...updated[campaignDataIndex], data: updatedData };
       }
       return updated;
@@ -923,8 +966,8 @@ const AgenticWorkspace: React.FC = () => {
           <div>
             <h3 className="neural-heading-3 mb-6">Campaign Parameters Identified</h3>
             {currentStepData?.data && (
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className={`mb-1 block text-sm font-medium ${
                       isGlassmorphism 
@@ -962,22 +1005,39 @@ const AgenticWorkspace: React.FC = () => {
                     />
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div>
+                  <label className={`mb-1 block text-sm font-medium ${
+                    isGlassmorphism 
+                      ? 'neural-text-label' 
+                      : 'text-gray-700'
+                  }`}>Campaign Objective</label>
+                  <input
+                    type="text"
+                    value={editableParams.objective}
+                    onChange={(e) => updateEditableParam('objective', e.target.value)}
+                    placeholder="Enter campaign objective"
+                    className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
+                      isGlassmorphism 
+                        ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
+                        : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className={`mb-1 block text-sm font-medium ${
                       isGlassmorphism 
                         ? 'neural-text-label' 
                         : 'text-gray-700'
-                    }`}>Campaign Objective</label>
+                    }`}>Start Date</label>
                     <input
-                      type="text"
-                      value={editableParams.objective}
-                      onChange={(e) => updateEditableParam('objective', e.target.value)}
-                      placeholder="Enter campaign objective"
+                      type="date"
+                      value={editableParams.startDate}
+                      onChange={(e) => updateEditableParam('startDate', e.target.value)}
                       className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
                         isGlassmorphism 
-                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                          ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900'
                       }`}
                     />
                   </div>
@@ -986,16 +1046,16 @@ const AgenticWorkspace: React.FC = () => {
                       isGlassmorphism 
                         ? 'neural-text-label' 
                         : 'text-gray-700'
-                    }`}>Timeline</label>
+                    }`}>End Date</label>
                     <input
-                      type="text"
-                      value={editableParams.timeline}
-                      onChange={(e) => updateEditableParam('timeline', e.target.value)}
-                      placeholder="Enter campaign timeline"
+                      type="date"
+                      value={editableParams.endDate}
+                      onChange={(e) => updateEditableParam('endDate', e.target.value)}
+                      min={editableParams.startDate} // End date can't be before start date
                       className={`w-full p-3 rounded-lg font-semibold focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${
                         isGlassmorphism 
-                          ? 'neural-glass text-gray-800 placeholder-gray-500 border border-white border-opacity-20 backdrop-blur-lg' 
-                          : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-500'
+                          ? 'neural-glass text-gray-800 border border-white border-opacity-20 backdrop-blur-lg' 
+                          : 'bg-white border border-gray-300 text-gray-900'
                       }`}
                     />
                   </div>
