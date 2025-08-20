@@ -2223,10 +2223,14 @@ const AgenticWorkspace: React.FC = () => {
                         );
                       }
                       
+                      // Get campaign setup data for context
+                      const campaignSetupData = campaignData.find(data => data.step === 'campaign_data');
+                      
                       return (
                         <CampaignForecastTable 
                           data={forecastData.data}
                           confidence={forecastData.confidence}
+                          campaignSetup={campaignSetupData?.data}
                         />
                       );
                     })()}
